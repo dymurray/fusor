@@ -1,0 +1,2910 @@
+diff --git a/fusor-ember-cli/app/components/button-selection.js b/fusor-ember-cli/app/components/button-selection.js
+new file mode 100644
+index 0000000..f666971
+--- /dev/null
++++ b/fusor-ember-cli/app/components/button-selection.js
+@@ -0,0 +1,23 @@
++import Ember from 'ember';
++
++export default Ember.Component.extend({
++
++  classNames: ['button-selection'],
++
++  classNameBindings: ['buttonSelectionSelected', 'buttonDisabled'],
++
++  buttonSelectionSelected: Ember.computed('value', 'groupValue', function() {
++    return (this.get('value') === this.get('groupValue'));
++  }),
++
++  buttonDisabled: Ember.computed('disabled', function() {
++    return this.get('disabled');
++  }),
++
++  click() {
++    if (!this.get('disabled')) {
++      return this.sendAction('changed', this.get('value'));
++    }
++  }
++
++});
+diff --git a/fusor-ember-cli/app/components/node-details-block.js b/fusor-ember-cli/app/components/node-details-block.js
+new file mode 100644
+index 0000000..47cb2d4
+--- /dev/null
++++ b/fusor-ember-cli/app/components/node-details-block.js
+@@ -0,0 +1,5 @@
++import Ember from 'ember';
++
++export default Ember.Component.extend({
++
++});
+diff --git a/fusor-ember-cli/app/components/node-details.js b/fusor-ember-cli/app/components/node-details.js
+new file mode 100644
+index 0000000..ff8bf90
+--- /dev/null
++++ b/fusor-ember-cli/app/components/node-details.js
+@@ -0,0 +1,22 @@
++import Ember from 'ember';
++
++export default Ember.Component.extend({
++
++  tagName: 'div',
++  classNames: ['node-details'],
++
++  customEditLabel: "Custom Edit",
++
++  isEditMode: false,
++
++  customEditLabel: Ember.computed('isEditMode', function() {
++    return this.get('isEditMode') ? "Finish Editing" : "Custom Edit";
++  }),
++
++  actions: {
++    editOseNodeDetails() {
++      this.toggleProperty('isEditMode');
++    }
++  }
++
++});
+diff --git a/fusor-ember-cli/app/components/ose-env-summary.js b/fusor-ember-cli/app/components/ose-env-summary.js
+new file mode 100644
+index 0000000..59d288d
+--- /dev/null
++++ b/fusor-ember-cli/app/components/ose-env-summary.js
+@@ -0,0 +1,8 @@
++import Ember from 'ember';
++
++export default Ember.Component.extend({
++
++  tagName: 'div',
++  classNames: ['ose-env-summary'],
++
++});
+diff --git a/fusor-ember-cli/app/components/ose-node-detail-line.js b/fusor-ember-cli/app/components/ose-node-detail-line.js
+new file mode 100644
+index 0000000..66eeb3f
+--- /dev/null
++++ b/fusor-ember-cli/app/components/ose-node-detail-line.js
+@@ -0,0 +1,8 @@
++import Ember from 'ember';
++
++export default Ember.Component.extend({
++
++  tagName: 'div',
++  classNames: ['row', 'ose-node-line'],
++
++});
+diff --git a/fusor-ember-cli/app/components/ose-summary-needed-available.js b/fusor-ember-cli/app/components/ose-summary-needed-available.js
+new file mode 100644
+index 0000000..e41c7c2
+--- /dev/null
++++ b/fusor-ember-cli/app/components/ose-summary-needed-available.js
+@@ -0,0 +1,65 @@
++import Ember from 'ember';
++
++export default Ember.Component.extend({
++
++  tagName: 'div',
++  classNames: ['row env-summary-needed-available'],
++
++  percentProgress: Ember.computed('needed', 'available', function() {
++    return parseInt(parseInt(this.get('needed')) / parseInt(this.get('available')) * 100);
++  }),
++
++  percentProgressMax: Ember.computed('percentProgress', function () {
++    var percentProgress = this.get('percentProgress') > 100 ? 100 : this.get('percentProgress')
++    return parseInt(percentProgress);
++  }),
++
++  styleWidth: Ember.computed('percentProgressMax', function () {
++    return new Ember.Handlebars.SafeString(this.get('percentProgressMax') + '%');
++  }),
++
++  progressBarClass: Ember.computed('percentProgress', function() {
++    var percent = this.get('percentProgress');
++    if (percent < 100) {
++      return 'progress-bar progress-bar-gray';
++    } else if (percent === 100) {
++      return 'progress-bar progress-bar-black';
++    } else if (percent > 100) {
++      return 'progress-bar progress-bar-danger';
++    } else {
++      return 'progress-bar';
++    }
++  }),
++
++  fontColorClass: Ember.computed('percentProgress', function() {
++    if (this.get('percentProgress') > 99) {
++      return 'white';
++    } else {
++      return 'black';
++    }
++  }),
++
++  isMaxAmount: Ember.computed('percentProgress', function() {
++    return (this.get('percentProgress') === 100);
++  }),
++
++  isOverCapacity: Ember.computed('percentProgress', function() {
++    return (this.get('percentProgress') > 100);
++  }),
++
++  helpText: Ember.computed('isOverCapacity', 'isMaxAmount', function() {
++    if (this.get('isOverCapacity')) {
++      return "Too much " + this.get('label') + " assigned";
++    } else if (this.get('isMaxAmount')) {
++      return "Maximum amount of " + this.get('label') + " assigned"
++    }
++  }),
++
++  showSubstractTooltip: Ember.computed('label', 'substractCfme', function() {
++    return (this.get('label') === 'Disk' && this.get('substractCfme'));
++  }),
++
++  tooltipDisk: Ember.computed('cfmeDisk',  function() {
++    return "CloudForms VM disk requirement of " + this.get('cfmeDisk') + " GB considered"
++  })
++});
+diff --git a/fusor-ember-cli/app/components/rhci-start.js b/fusor-ember-cli/app/components/rhci-start.js
+index 877554a..3faff79 100644
+--- a/fusor-ember-cli/app/components/rhci-start.js
++++ b/fusor-ember-cli/app/components/rhci-start.js
+@@ -2,15 +2,21 @@ import Ember from 'ember';
+ 
+ export default Ember.Component.extend({
+ 
+-  isDisabledCfme: true,
+-
+-  setIsDisabledCfme: Ember.observer('isRhev', 'isOpenStack', function() {
++  setIsDisabledCfmeAndOpenshift: Ember.observer('isRhev', 'isOpenStack', function() {
+     if (this.get('isRhev') || this.get('isOpenStack')) {
++      this.set('isDisabledOpenShift', false);
+       return this.set('isDisabledCfme', false);
+     } else {
++      this.set('isOpenShift', false);
+       this.set('isCloudForms', false);
++      this.set('isDisabledOpenShift', true);
+       return this.set('isDisabledCfme', true);
+     }
+-  })
++  }),
++
++  descRhev: 'Complete virtualization management ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec',
++  descOpenstack: 'Flexible, secure foundations to build a massively scalable private or public coud. ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec',
++  descCfme: 'Manage your virtual, private, and hybrid cloud infrasctructures. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec',
++  descOpenshift: 'Manage your Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec',
+ 
+ });
+diff --git a/fusor-ember-cli/app/controllers/deployment-new.js b/fusor-ember-cli/app/controllers/deployment-new.js
+index fb617ad..5b4cc05 100644
+--- a/fusor-ember-cli/app/controllers/deployment-new.js
++++ b/fusor-ember-cli/app/controllers/deployment-new.js
+@@ -14,6 +14,7 @@ export default Ember.Controller.extend(DeploymentControllerMixin, DisableTabMixi
+   // these tabs will always be disabled within deployment-new
+   isDisabledRhev: true,
+   isDisabledOpenstack: true,
++  isDisabledOpenShift: true,
+   isDisabledCloudForms: true,
+   isDisabledSubscriptions: true,
+   isDisabledReview: true,
+diff --git a/fusor-ember-cli/app/controllers/deployment-new/start.js b/fusor-ember-cli/app/controllers/deployment-new/start.js
+index d2314f5..866d4c2 100644
+--- a/fusor-ember-cli/app/controllers/deployment-new/start.js
++++ b/fusor-ember-cli/app/controllers/deployment-new/start.js
+@@ -8,6 +8,7 @@ export default Ember.Controller.extend(StartControllerMixin, {
+   isRhev: Ember.computed.alias("deploymentNewController.model.deploy_rhev"),
+   isOpenStack: Ember.computed.alias("deploymentNewController.model.deploy_openstack"),
+   isCloudForms: Ember.computed.alias("deploymentNewController.model.deploy_cfme"),
++  isOpenShift: Ember.computed.alias("deploymentNewController.model.deploy_openshift"),
+   isSubscriptions: Ember.computed.alias("deploymentNewController.isSubscriptions")
+ 
+ });
+diff --git a/fusor-ember-cli/app/controllers/deployment.js b/fusor-ember-cli/app/controllers/deployment.js
+index 2ca7668..e34dba3 100644
+--- a/fusor-ember-cli/app/controllers/deployment.js
++++ b/fusor-ember-cli/app/controllers/deployment.js
+@@ -8,6 +8,7 @@ export default Ember.Controller.extend(DeploymentControllerMixin, DisableTabMixi
+   configureEnvironmentController: Ember.inject.controller('configure-environment'),
+   rhevController: Ember.inject.controller('rhev'),
+   openstackController: Ember.inject.controller('openstack'),
++  openshiftController: Ember.inject.controller('openshift'),
+   cloudformsController: Ember.inject.controller('cloudforms'),
+   credentialsController: Ember.inject.controller('subscriptions/credentials'),
+   selectSubscriptionsController: Ember.inject.controller('subscriptions/select-subscriptions'),
+@@ -21,6 +22,7 @@ export default Ember.Controller.extend(DeploymentControllerMixin, DisableTabMixi
+ 
+   validRhev: Ember.computed.alias("rhevController.validRhev"),
+   validOpenStack: Ember.computed.alias("openstackController.validOpenStack"),
++  validOpenshift: Ember.computed.alias("openshiftController.validOpenshift"),
+   validCloudforms: Ember.computed.alias("cloudformsController.validCloudforms"),
+   disableNextOnSelectSubscriptions: Ember.computed.alias("selectSubscriptionsController.disableNextOnSelectSubscriptions"),
+   isDisconnected: Ember.computed.alias("model.is_disconnected"),
+@@ -33,7 +35,7 @@ export default Ember.Controller.extend(DeploymentControllerMixin, DisableTabMixi
+            );
+   }),
+ 
+-  isDisabledCloudForms: Ember.computed(
++  isDisabledOpenShift: Ember.computed(
+     "satelliteInvalid",
+     'isRhev',
+     'isOpenStack',
+@@ -47,24 +49,43 @@ export default Ember.Controller.extend(DeploymentControllerMixin, DisableTabMixi
+     }
+   ),
+ 
++  isDisabledCloudForms: Ember.computed(
++    "satelliteInvalid",
++    'isRhev',
++    'isOpenStack',
++    'isOpenShift',
++    'validRhev',
++    'validOpenStack',
++    'validOpenshift',
++    function() {
++      return (this.get('satelliteInvalid') ||
++              (this.get('isRhev') && !(this.get('validRhev'))) ||
++              (this.get('isOpenStack') && !(this.get('validOpenStack'))) ||
++              (this.get('isOpenShift') && !(this.get('validOpenshift')))
++              );
++    }
++  ),
++
+   isDisabledSubscriptions: Ember.computed(
+     "satelliteInvalid",
+     'isRhev',
+     'isOpenStack',
++    'isOpenShift',
+     'validRhev',
+     'validOpenStack',
++    'validOpenshift',
+     'isCloudForms',
+     'validCloudforms',
+     function() {
+       return (this.get('satelliteInvalid') ||
+               (this.get('isRhev') && !(this.get('validRhev'))) ||
+               (this.get('isOpenStack') && !(this.get('validOpenStack'))) ||
++              (this.get('isOpenShift') && !(this.get('validOpenshift'))) ||
+               (this.get('isCloudForms') && !(this.get('validCloudforms')))
+              );
+     }
+   ),
+ 
+-
+   hasSubscriptionUUID: Ember.computed(
+     'organizationUpstreamConsumerUUID',
+     'model.upstream_consumer_uuid',
+diff --git a/fusor-ember-cli/app/controllers/deployment/start.js b/fusor-ember-cli/app/controllers/deployment/start.js
+index bd0eaa3..f2250e9 100644
+--- a/fusor-ember-cli/app/controllers/deployment/start.js
++++ b/fusor-ember-cli/app/controllers/deployment/start.js
+@@ -7,6 +7,7 @@ export default Ember.Controller.extend(StartControllerMixin, NeedsDeploymentMixi
+   isRhev: Ember.computed.alias("deploymentController.model.deploy_rhev"),
+   isOpenStack: Ember.computed.alias("deploymentController.model.deploy_openstack"),
+   isCloudForms: Ember.computed.alias("deploymentController.model.deploy_cfme"),
++  isOpenShift: Ember.computed.alias("deploymentController.model.deploy_openshift"),
+   isSubscriptions: Ember.computed.alias("deploymentController.model.isSubscriptions")
+ 
+ });
+diff --git a/fusor-ember-cli/app/controllers/openshift.js b/fusor-ember-cli/app/controllers/openshift.js
+new file mode 100644
+index 0000000..a0989c3
+--- /dev/null
++++ b/fusor-ember-cli/app/controllers/openshift.js
+@@ -0,0 +1,72 @@
++import Ember from 'ember';
++import NeedsDeploymentMixin from "../mixins/needs-deployment-mixin";
++import OpenshiftMixin from "../mixins/openshift-mixin";
++import { AggregateValidator, PresenceValidator, AlphaNumericDashUnderscoreValidator } from '../utils/validators';
++
++export default Ember.Controller.extend(NeedsDeploymentMixin, OpenshiftMixin, {
++
++  stepNumberOpenShift: Ember.computed.alias("deploymentController.stepNumberOpenShift"),
++
++  isVcpuOverCapacity: Ember.computed('vcpuNeeded', 'vcpuAvailable', function() {
++      return (this.get('vcpuNeeded') > this.get('vcpuAvailable'));
++  }),
++
++  isRamOverCapacity: Ember.computed('ramNeeded', 'ramAvailable', function() {
++      return (this.get('ramNeeded') > this.get('ramAvailable'));
++  }),
++
++  isDiskOverCapacity: Ember.computed('diskNeeded', 'diskAvailable', function() {
++      return (this.get('diskNeeded') > this.get('diskAvailable'));
++  }),
++
++  isOverCapacity: Ember.computed('isVcpuOverCapacity',
++                                 'isRamOverCapacity',
++                                 'isDiskOverCapacity', function() {
++      return (this.get('isVcpuOverCapacity') ||
++              this.get('isRamOverCapacity') ||
++              this.get('isDiskOverCapacity'));
++  }),
++  isUnderCapacity: Ember.computed.not("isOverCapacity"),
++
++  isValidOpenshiftNodes: Ember.computed('openshiftInstallLoc',
++                                        'numMasterNodes',
++                                        'numWorkerNodes',
++                                        'storageSize',
++                                        'masterVcpu',
++                                        'masterRam',
++                                        'masterDisk',
++                                        'nodeVcpu',
++                                        'nodeRam',
++                                        'nodeDisk',
++                                        'isUnderCapacity', function() {
++      return (Ember.isPresent(this.get('openshiftInstallLoc')) &&
++              (this.get('numMasterNodes') > 0) &&
++              (this.get('numWorkerNodes') > 0) &&
++              (this.get('storageSize') > 0) &&
++              (this.get('masterVcpu') > 0) &&
++              (this.get('masterRam') > 0) &&
++              (this.get('masterDisk') > 0) &&
++              (this.get('nodeVcpu') > 0) &&
++              (this.get('nodeRam') > 0) &&
++              (this.get('nodeDisk') > 0) &&
++              this.get('isUnderCapacity'));
++  }),
++  isInvalidOpenshiftNodes: Ember.computed.not("isValidOpenshiftNodes"),
++
++  openshiftUsernameValidator: AggregateValidator.create({
++    validators: [
++      PresenceValidator.create({}),
++      AlphaNumericDashUnderscoreValidator.create({})
++    ]
++  }),
++
++  isValidOpenshiftConfiguration: Ember.computed('model.openshift_username', function() {
++    return this.get('openshiftUsernameValidator').isValid(this.get('model.openshift_username'));
++  }),
++  isInvalidOpenshiftConfiguration: Ember.computed.not("isValidOpenshiftConfiguration"),
++
++  validOpenshift: Ember.computed('isValidOpenshiftNodes', 'isValidOpenshiftConfiguration', function() {
++      return this.get('isValidOpenshiftNodes') && this.get('isValidOpenshiftConfiguration');
++  })
++
++});
+diff --git a/fusor-ember-cli/app/controllers/openshift/openshift-configuration.js b/fusor-ember-cli/app/controllers/openshift/openshift-configuration.js
+new file mode 100644
+index 0000000..5cc439f
+--- /dev/null
++++ b/fusor-ember-cli/app/controllers/openshift/openshift-configuration.js
+@@ -0,0 +1,94 @@
++import Ember from 'ember';
++import NeedsDeploymentMixin from "../../mixins/needs-deployment-mixin";
++
++export default Ember.Controller.extend(NeedsDeploymentMixin, {
++
++  openshiftController: Ember.inject.controller('openshift'),
++
++  isCloudForms: Ember.computed.alias("deploymentController.isCloudForms"),
++  isSubscriptions: Ember.computed.alias("deploymentController.isSubscriptions"),
++
++  nextRouteNameAfterOpenshift: Ember.computed(
++    'isCloudForms',
++    'isSubscriptions',
++    function() {
++        if (this.get('isCloudForms')) {
++          return 'cloudforms';
++        } else if (this.get('isSubscriptions')) {
++          return 'subscriptions';
++        } else {
++          return 'review';
++        }
++    }
++  ),
++
++  openshiftUsernameValidator: Ember.computed.alias("openshiftController.openshiftUsernameValidator"),
++  isValidOpenshiftConfiguration: Ember.computed.alias("openshiftController.isValidOpenshiftConfiguration"),
++  isInvalidOpenshiftConfiguration: Ember.computed.alias("openshiftController.isInvalidOpenshiftConfiguration"),
++
++  hasEndingSlashInExportPath: Ember.computed('model.openshift_export_path', function() {
++    if (Ember.isPresent(this.get('model.openshift_export_path'))) {
++      return (this.get('model.openshift_export_path').slice('-1') === '/');
++    }
++  }),
++
++  hasNoLeadingSlashInExportPath: Ember.computed('model.openshift_export_path', function() {
++    if (Ember.isPresent(this.get('model.openshift_export_path'))) {
++      return (this.get('model.openshift_export_path').charAt(0) !== '/');
++    }
++  }),
++
++  errorsHashExportPath: Ember.computed('hasEndingSlashInExportPath', 'model.openshift_export_path', function() {
++    if (this.get('hasNoLeadingSlashInExportPath')) {
++      return {"name": 'You must have a leading slash'};
++    } else if (this.get('hasEndingSlashInExportPath')) {
++      return {"name": 'You cannot have a trailing slash'};
++    } else {
++      return {};
++    }
++  }),
++
++  isNFS: Ember.computed('model.openshift_storage_type', function() {
++    return (this.get('model.openshift_storage_type') === 'NFS');
++  }),
++
++  isDoNotUse: Ember.computed('model.openshift_storage_type', function() {
++    return (this.get('model.openshift_storage_type') === 'DoNotUse');
++  }),
++
++  isGluster: Ember.computed('model.openshift_storage_type', function() {
++    return (this.get('model.openshift_storage_type') === 'Gluster');
++  }),
++
++  isInvalidExportPath: Ember.computed(
++    'model.openshift_export_path',
++    'hasEndingSlashInExportPath',
++    'hasNoLeadingSlashInExportPath',
++    function() {
++      return (Ember.isBlank(this.get('model.openshift_export_path')) ||
++              this.get('hasEndingSlashInExportPath') ||
++              this.get('hasNoLeadingSlashInExportPath')
++             );
++    }
++  ),
++
++  invalidStorageName: Ember.computed('model.openshift_storage_name', function() {
++      var validAlphaNumbericRegex = new RegExp(/^[A-Za-z0-9_-]+$/);
++      if (Ember.isPresent(this.get('model.openshift_storage_name'))) {
++          return !(this.get('model.openshift_storage_name').trim().match(validAlphaNumbericRegex));
++      }
++  }),
++
++  disableNextOpenshiftConfig: Ember.computed(
++    'invalidStorageName',
++    'isInvalidExportPath',
++    function () {
++        return (this.get('invalidStorageName') ||
++                this.get('isInvalidExportPath'));
++    }
++  ),
++
++  validRhevStorage: Ember.computed.not('disableNextStorage')
++
++});
++
+diff --git a/fusor-ember-cli/app/controllers/openshift/openshift-nodes.js b/fusor-ember-cli/app/controllers/openshift/openshift-nodes.js
+new file mode 100644
+index 0000000..4b8e010
+--- /dev/null
++++ b/fusor-ember-cli/app/controllers/openshift/openshift-nodes.js
+@@ -0,0 +1,62 @@
++import Ember from 'ember';
++import NeedsDeploymentMixin from "../../mixins/needs-deployment-mixin";
++import OpenshiftMixin from "../../mixins/openshift-mixin";
++
++export default Ember.Controller.extend(NeedsDeploymentMixin, OpenshiftMixin, {
++
++  openshiftController: Ember.inject.controller('openshift'),
++
++  // similar code to CFME where-install.js. Possible to DRY into mixin
++  isRhev: Ember.computed.alias("deploymentController.isRhev"),
++  isNotRhev: Ember.computed.not("isRhev"),
++  isOpenStack: Ember.computed.alias("deploymentController.isOpenStack"),
++  isNotOpenStack: Ember.computed.not("isOpenStack"),
++
++  isOverCapacity: Ember.computed.alias("openshiftController.isOverCapacity"),
++  isInvalidOpenshiftNodes: Ember.computed.alias("openshiftController.isInvalidOpenshiftNodes"),
++
++  disableRHEV: Ember.computed('isStarted', 'isNotRhev', function() {
++    return (this.get('isStarted') || this.get('isNotRhev'));
++  }),
++
++  disableOpenStack: Ember.computed('isStarted', 'isNotOpenStack', function() {
++    return (this.get('isStarted') || this.get('isNotOpenStack'));
++  }),
++
++  disableRHEVradio: Ember.computed('disableRHEV', 'isStarted', function () {
++    return (this.get('disableRHEV') || this.get('isStarted'));
++  }),
++
++  disableOpenstackradio: Ember.computed('disableOpenStack', 'isStarted', function () {
++    return (this.get('disableOpenStack') || this.get('isStarted'));
++  }),
++
++  backRouteName: Ember.computed('isOpenStack', 'isRhev', function() {
++    if (this.get('isOpenStack')) {
++      return 'openstack.overcloud';
++    } else if (this.get('isRhev')) {
++      return 'storage';
++    } else {
++      return 'satellite.access-insights';
++    }
++  }),
++
++  showEnvironmentSummary: Ember.computed('numNodes', 'storageSize', function() {
++    return (Ember.isPresent(this.get('numNodes')) && Ember.isPresent(this.get('storageSize')));
++  }),
++
++  actions: {
++    openshiftLocationChanged() {},
++
++    numNodesChanged(numNodes) {
++      var numMasterNodes = 1; // for non-HA scerios
++      this.set('numMasterNodes', numMasterNodes);
++      return this.set('numWorkerNodes', numNodes - numMasterNodes);
++    },
++
++    storageSizeChanged(storageSize) {
++      return this.set('model.openshift_storage_size', storageSize);
++    }
++  }
++
++});
+diff --git a/fusor-ember-cli/app/controllers/openstack/overcloud.js b/fusor-ember-cli/app/controllers/openstack/overcloud.js
+index 886e23e..f3f3cb3 100644
+--- a/fusor-ember-cli/app/controllers/openstack/overcloud.js
++++ b/fusor-ember-cli/app/controllers/openstack/overcloud.js
+@@ -9,6 +9,7 @@ let OvercloudController = Ember.Controller.extend(
+ {
+   openStack: Ember.computed.alias("deploymentController.openStack"),
+   isCloudForms: Ember.computed.alias("deploymentController.isCloudForms"),
++  isOpenShift: Ember.computed.alias("deploymentController.isOpenShift"),
+   openstackOvercloudPrivateNet: Ember.computed.alias('deploymentController.model.openstack_overcloud_private_net'),
+   openstackOvercloudFloatNet: Ember.computed.alias('deploymentController.model.openstack_overcloud_float_net'),
+   openstackOvercloudFloatGateway: Ember.computed.alias('deploymentController.model.openstack_overcloud_float_gateway'),
+@@ -25,6 +26,8 @@ let OvercloudController = Ember.Controller.extend(
+   nextStepRouteNameOvercloud: Ember.computed('isCloudForms', function() {
+     if (this.get('isCloudForms')) {
+       return 'cloudforms';
++    } else if (this.get('isOpenShift')) {
++      return 'openshift';
+     } else {
+       return 'subscriptions';
+     }
+diff --git a/fusor-ember-cli/app/controllers/review/installation.js b/fusor-ember-cli/app/controllers/review/installation.js
+index 84fddb2..18c0f31 100644
+--- a/fusor-ember-cli/app/controllers/review/installation.js
++++ b/fusor-ember-cli/app/controllers/review/installation.js
+@@ -1,7 +1,8 @@
+ import Ember from 'ember';
+ import NeedsDeploymentMixin from "../../mixins/needs-deployment-mixin";
++import OpenshiftMixin from "../../mixins/openshift-mixin";
+ 
+-export default Ember.Controller.extend(NeedsDeploymentMixin, {
++export default Ember.Controller.extend(NeedsDeploymentMixin, OpenshiftMixin, {
+ 
+   rhevController: Ember.inject.controller('rhev'),
+   rhevSetupController: Ember.inject.controller('rhev-setup'),
+@@ -68,6 +69,7 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+   isOpenStackOpen: true,
+   isCloudFormsOpen: true,
+   isSubscriptionsOpen: true,
++  isOpenshiftOpen: true,
+ 
+   engineHostAddressDefault: 'ovirt-hypervisor.rhci.redhat.com',
+   hostAddress: Ember.computed.alias("rhevOptionsController.hostAddress"),
+@@ -81,6 +83,7 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+   isRhev: Ember.computed.alias("deploymentController.isRhev"),
+   isOpenStack: Ember.computed.alias("deploymentController.isOpenStack"),
+   openStack: Ember.computed.alias("deploymentController.openStack"),
++  isOpenShift: Ember.computed.alias("deploymentController.isOpenShift"),
+   isCloudForms: Ember.computed.alias("deploymentController.isCloudForms"),
+   isSubscriptions: Ember.computed.alias("deploymentController.isSubscriptions"),
+ 
+@@ -135,9 +138,11 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+         }
+       } else {
+         if (this.get('isCloudForms')) {
+-          return 'cloudforms/cfme-configuration';
++          return 'cloudforms.cfme-configuration';
++        } else if (this.get('isOpenShift')) {
++          return 'openshift.openshift-configuration';
+         } else if (this.get('isOpenStack')) {
+-          // TODO
++          return 'openstack.overcloud';
+         } else if (this.get('isRhev')) {
+           return 'storage';
+         }
+@@ -162,6 +167,18 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+     }
+   }),
+ 
++  ramNeededGB: Ember.computed('ramNeeded', function() {
++    return this.get('ramNeeded') + ' GB';
++  }),
++
++  diskNeededGB: Ember.computed('diskNeeded', function() {
++    return this.get('diskNeeded') + ' GB';
++  }),
++
++  storageSizeGB: Ember.computed('storageSize', function() {
++    return this.get('storageSize') + ' GB';
++  }),
++
+   closeContinueDeployModal() {
+     this.set('continueDeploymentModalOpen', false);
+     this.set('continueDeploymentModalClosed', true);
+diff --git a/fusor-ember-cli/app/controllers/storage.js b/fusor-ember-cli/app/controllers/storage.js
+index e0d310f..493eec9 100644
+--- a/fusor-ember-cli/app/controllers/storage.js
++++ b/fusor-ember-cli/app/controllers/storage.js
+@@ -139,6 +139,7 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+ 
+ 
+   disableNextStorage: Ember.computed(
++    'isCloudForms',
+     'isInvalidStorageFields',
+     'isInvalidExportDomainFields',
+     'invalidStorageName',
+diff --git a/fusor-ember-cli/app/controllers/subscriptions/credentials.js b/fusor-ember-cli/app/controllers/subscriptions/credentials.js
+index c5def36..48ed56c 100644
+--- a/fusor-ember-cli/app/controllers/subscriptions/credentials.js
++++ b/fusor-ember-cli/app/controllers/subscriptions/credentials.js
+@@ -13,6 +13,7 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+   isRhev: Ember.computed.alias("deploymentController.model.deploy_rhev"),
+   isOpenStack: Ember.computed.alias("deploymentController.model.deploy_openstack"),
+   isCloudForms: Ember.computed.alias("deploymentController.model.deploy_cfme"),
++  isOpenShift: Ember.computed.alias("deploymentController.model.deploy_openshift"),
+ 
+   //overwritten by setupController
+   organizationUpstreamConsumerUUID: null,
+@@ -36,9 +37,11 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+     return Ember.isPresent(this.get('organizationUpstreamConsumerUUID'));
+   }),
+ 
+-  backRouteNameonCredentials: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', function() {
++  backRouteNameonCredentials: Ember.computed('isRhev', 'isOpenStack', 'isOpenShift', 'isCloudForms', function() {
+     if (this.get('isCloudForms')) {
+       return 'cloudforms.cfme-configuration';
++    } else if (this.get('isOpenShift')) {
++      return 'openshift.openshift-configuration';
+     } else if (this.get('isOpenStack')) {
+       return 'openstack.overcloud';
+     } else if (this.get('isRhev')) {
+diff --git a/fusor-ember-cli/app/controllers/where-install.js b/fusor-ember-cli/app/controllers/where-install.js
+index 5bde549..5728999 100644
+--- a/fusor-ember-cli/app/controllers/where-install.js
++++ b/fusor-ember-cli/app/controllers/where-install.js
+@@ -10,7 +10,9 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+   isNotRhev: Ember.computed.not("isRhev"),
+   isOpenStack: Ember.computed.alias("deploymentController.isOpenStack"),
+   isNotOpenStack: Ember.computed.not("isOpenStack"),
++  isOpenStack: Ember.computed.alias("deploymentController.isOpenStack"),
+   isInvalidCfmeInstallLocation: Ember.computed.alias("cloudformsController.isInvalidCfmeInstallLocation"),
++  isOpenShift: Ember.computed.alias("deploymentController.isOpenShift"),
+ 
+   disableRHEV: Ember.computed('isStarted', 'isNotRhev', function() {
+     return (this.get('isStarted') || this.get('isNotRhev'));
+@@ -28,8 +30,10 @@ export default Ember.Controller.extend(NeedsDeploymentMixin, {
+     return (this.get('disableOpenStack') || this.get('isStarted'));
+   }),
+ 
+-  backRouteName: Ember.computed('isOpenStack', 'isRhev', function() {
+-    if (this.get('isOpenStack')) {
++  backRouteName: Ember.computed('isOpenStack', 'isRhev', 'isOpenShift', function() {
++    if (this.get('isOpenShift')) {
++      return 'openshift.openshift-configuration';
++    } else if (this.get('isOpenStack')) {
+       return 'openstack.overcloud';
+     } else if (this.get('isRhev')) {
+       return 'storage';
+diff --git a/fusor-ember-cli/app/mirage/config.js b/fusor-ember-cli/app/mirage/config.js
+index 9647350..aebe251 100644
+--- a/fusor-ember-cli/app/mirage/config.js
++++ b/fusor-ember-cli/app/mirage/config.js
+@@ -131,6 +131,10 @@ export default function() {
+ 
+   this.post('/customer_portal/consumers/:uuid/entitlements');
+ 
++  this.get('/api/v2/settings', function(db, request) {
++    return {results: db.settings};
++  });
++
+   /*
+     Route shorthand cheatsheet
+   */
+diff --git a/fusor-ember-cli/app/mirage/factories/deployment.js b/fusor-ember-cli/app/mirage/factories/deployment.js
+index 9955a52..5686f02 100644
+--- a/fusor-ember-cli/app/mirage/factories/deployment.js
++++ b/fusor-ember-cli/app/mirage/factories/deployment.js
+@@ -33,6 +33,13 @@ export default Mirage.Factory.extend({
+   openstack_overcloud_autogenerate_password: false,
+   upstream_consumer_uuid: "7ffddefd-aacb-4192-a999-01beb7c2e473",
+   upstream_consumer_name: "tsanders-rhci",
++  openshift_storage_type: "NFS",
++  openshift_storage_name: "openshift-storage",
++  openshift_export_path: "/share/openshift/path",
++  cloudforms_vcpu: 4,
++  cloudforms_ram: 6,
++  cloudforms_vm_disk_size: 40,
++  cloudforms_db_disk_size: 40
+ 
+ });
+ 
+diff --git a/fusor-ember-cli/app/mirage/fixtures/settings.js b/fusor-ember-cli/app/mirage/fixtures/settings.js
+new file mode 100644
+index 0000000..9292242
+--- /dev/null
++++ b/fusor-ember-cli/app/mirage/fixtures/settings.js
+@@ -0,0 +1,112 @@
++export default [
++        {
++            "id": 102,
++            "name": "openshift_master_disk",
++            "value": 30,
++            "description": "Amount of Storage (GB) for each OSE Master Node",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 30,
++            "created_at": "2016-02-18T14:36:44Z",
++            "updated_at": "2016-02-18T15:16:33Z"
++        },
++        {
++            "id": 101,
++            "name": "openshift_master_ram",
++            "value": 8,
++            "description": "Amount of RAM (GB) for each OSE Master Node",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 8,
++            "created_at": "2016-02-18T14:36:44Z",
++            "updated_at": "2016-02-18T15:16:37Z"
++        },
++        {
++            "id": 100,
++            "name": "openshift_master_vcpu",
++            "value": 2,
++            "description": "Number of vCPU's for each OSE Master Node",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 2,
++            "created_at": "2016-02-18T14:36:44Z",
++            "updated_at": "2016-02-18T15:16:40Z"
++        },
++        {
++            "id": 105,
++            "name": "openshift_node_disk",
++            "value": 16,
++            "description": "Amount of Storage (GB) for each OSE Worker Node",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 16,
++            "created_at": "2016-02-18T14:36:44Z",
++            "updated_at": "2016-02-18T15:16:43Z"
++        },
++        {
++            "id": 104,
++            "name": "openshift_node_ram",
++            "value": 8,
++            "description": "Amount of RAM (GB) for each OSE Worker Node",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 8,
++            "created_at": "2016-02-18T14:36:44Z",
++            "updated_at": "2016-02-18T15:16:46Z"
++        },
++        {
++            "id": 103,
++            "name": "openshift_node_vcpu",
++            "value": 1,
++            "description": "Number of vCPU's for each OSE Worker Node",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 1,
++            "created_at": "2016-02-18T14:36:44Z",
++            "updated_at": "2016-02-18T15:16:49Z"
++        },
++        {
++            "id": 111,
++            "name": "cloudforms_db_disk_size",
++            "value": 40,
++            "description": "Size of Storage (GB) for DB for CloudForms",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 40,
++            "created_at": "2016-02-25T15:32:31Z",
++            "updated_at": "2016-02-25T15:32:31Z"
++        },
++        {
++            "id": 112,
++            "name": "cloudforms_ram",
++            "value": 6,
++            "description": "Amount of RAM (GB) for CloudForms",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 6,
++            "created_at": "2016-02-25T15:32:31Z",
++            "updated_at": "2016-02-25T15:32:31Z"
++        },
++        {
++            "id": 113,
++            "name": "cloudforms_vcpu",
++            "value": 4,
++            "description": "Number of vCPU's for CloudForms",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 4,
++            "created_at": "2016-02-25T15:32:31Z",
++            "updated_at": "2016-02-25T15:32:31Z"
++        },
++        {
++            "id": 110,
++            "name": "cloudforms_vm_disk_size",
++            "value": 40,
++            "description": "Size of Storage (GB) for VM for CloudForms",
++            "category": "Setting::Openshift",
++            "settings_type": "integer",
++            "default": 40,
++            "created_at": "2016-02-25T15:32:31Z",
++            "updated_at": "2016-02-25T15:32:31Z"
++        }
++    ];
+\ No newline at end of file
+diff --git a/fusor-ember-cli/app/mirage/scenarios/default.js b/fusor-ember-cli/app/mirage/scenarios/default.js
+index 161bc99..5dfdce0 100644
+--- a/fusor-ember-cli/app/mirage/scenarios/default.js
++++ b/fusor-ember-cli/app/mirage/scenarios/default.js
+@@ -50,12 +50,23 @@ export default function(server) {
+                                       lifecycle_environment_id: env.id,
+                                      });
+ 
+-  server.create('deployment', {name: 'all_3_products_deployment',
++  server.create('deployment', {name: 'rhev_and_openshift_deployment',
+                                       deploy_rhev: true,
+-                                      deploy_openstack: true,
++                                      deploy_openshift: true,
++                                      organization_id: org.id,
++                                      lifecycle_environment_id: env.id,
++                                      discovered_host_id: engine.id,
++                                      discovered_host_ids: [hypervisor1.id, hypervisor2.id]
++                                     });
++
++  server.create('deployment', {name: 'rhev_openshift_cfme_deployment',
++                                      deploy_rhev: true,
++                                      deploy_openshift: true,
+                                       deploy_cfme: true,
+                                       organization_id: org.id,
+                                       lifecycle_environment_id: env.id,
++                                      discovered_host_id: engine.id,
++                                      discovered_host_ids: [hypervisor1.id, hypervisor2.id]
+                                      });
+ 
+ }
+diff --git a/fusor-ember-cli/app/mixins/deployment-controller-mixin.js b/fusor-ember-cli/app/mixins/deployment-controller-mixin.js
+index 914c97e..917a5ba 100644
+--- a/fusor-ember-cli/app/mixins/deployment-controller-mixin.js
++++ b/fusor-ember-cli/app/mixins/deployment-controller-mixin.js
+@@ -11,6 +11,7 @@ export default Ember.Mixin.create({
+   isRhev: Ember.computed.alias("model.deploy_rhev"),
+   isOpenStack: Ember.computed.alias("model.deploy_openstack"),
+   isCloudForms: Ember.computed.alias("model.deploy_cfme"),
++  isOpenShift: Ember.computed.alias("model.deploy_openshift"),
+ 
+   // default is downstream
+   isUpstream: false,
+@@ -33,8 +34,8 @@ export default Ember.Mixin.create({
+   organizationTabRouteName: null,
+   lifecycleEnvironmentTabRouteName: null,
+ 
+-  disableNextOnStart: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', function () {
+-    return (!(this.get('isRhev') || this.get('isOpenStack') || this.get('isCloudForms')));
++  disableNextOnStart: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', 'isOpenShift', function () {
++    return (!(this.get('isRhev') || this.get('isOpenStack') || this.get('isCloudForms') || this.get('isOpenShift')));
+   }),
+ 
+   // names
+@@ -62,6 +63,8 @@ export default Ember.Mixin.create({
+     if (this.get('isUpstream')) { return "ManageIQ"; } else { return "CloudForms"; }
+   }),
+ 
++  nameOpenShift: "OpenShift",
++
+   fullnameRhev: Ember.computed('isUpstream', function() {
+     if (this.get('isUpstream')) { return "oVirt Project"; } else { return "Red Hat Enterprise Virtualization"; }
+   }),
+@@ -74,6 +77,8 @@ export default Ember.Mixin.create({
+     if (this.get('isUpstream')) { return "ManageIQ"; } else { return "Red Hat Cloud Forms Management Engine"; }
+   }),
+ 
++  fullnameOpenShift: "Red Hat Cloud OpenShift",
++
+   // logo
+   logoPath: Ember.computed('isUpstream', function() {
+     if (this.get('isUpstream')) { return "assets/foreman.png"; } else { return "assets/Header-logotype.png"; }
+@@ -81,49 +86,69 @@ export default Ember.Mixin.create({
+ 
+   currentStepNumber: null, //set by setupController,
+ 
+-  // steps
+-  stepNumberRhev: 2,
++  numberProducts: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', 'isOpenShift', function() {
++    var rhev = this.get('isRhev') ? 1 : 0
++    var osp = this.get('isOpenStack') ? 1 : 0
++    var cfme = this.get('isCloudForms') ? 1 : 0
++    var osh = this.get('isOpenShift') ? 1 : 0
++    return rhev + osp + cfme + osh;
++  }),
+ 
+-  stepNumberOpenstack: Ember.computed('isRhev', function() {
++  // steps
++  stepNumberRhev: Ember.computed('isRhev', function() {
+     if (this.get('isRhev')) {
+-      return 3;
+-    } else {
+       return 2;
+     }
+   }),
+ 
+-  stepNumberCloudForms: Ember.computed('isRhev', 'isOpenStack', function() {
+-    if (this.get('isRhev') && this.get('isOpenStack')) {
+-      return 4;
+-    } else if (this.get('isRhev') || this.get('isOpenStack'))  {
+-      return 3;
+-    } else {
+-      return 2;
++  stepNumberOpenstack: Ember.computed('stepNumberRhev', 'isOpenStack', function() {
++    if (this.get('isOpenStack')) {
++      if (this.get('stepNumberRhev')) {
++        return this.get('stepNumberRhev') + 1;
++      } else {
++        return 2;
++      }
+     }
+   }),
+ 
+-  stepNumberSubscriptions: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', function() {
+-    if (this.get('isRhev') && this.get('isOpenStack') && this.get('isCloudForms')) {
+-      return 5;
+-    } else if ((this.get('isRhev') && this.get('isOpenStack')) || (this.get('isRhev') && this.get('isCloudForms')) ||  (this.get('isOpenStack') && this.get('isCloudForms')))  {
+-      return 4;
+-    } else if (this.get('isRhev') || this.get('isOpenStack') || this.get('isCloudForms')) {
+-      return 3;
+-    } else {
+-      return 2;
++  stepNumberOpenShift: Ember.computed('stepNumberOpenstack', 'isOpenShift', function() {
++    if (this.get('isOpenShift')) {
++      if (this.get('stepNumberOpenstack')) {
++        return this.get('stepNumberOpenstack') + 1;
++      } else if (this.get('stepNumberRhev')) {
++        return this.get('stepNumberRhev') + 1;
++      } else {
++        return 2;
++      }
++    }
++  }),
++
++  stepNumberCloudForms: Ember.computed('stepNumberOpenShift', 'isCloudForms', function() {
++    if (this.get('isCloudForms')) {
++      if (this.get('stepNumberOpenShift')) {
++        return this.get('stepNumberOpenShift') + 1;
++      } else if (this.get('stepNumberOpenstack')) {
++        return this.get('stepNumberOpenstack') + 1;
++      } else if (this.get('stepNumberRhev')) {
++        return this.get('stepNumberRhev') + 1;
++      } else {
++        return 2;
++      }
++    }
++  }),
++
++  stepNumberSubscriptions: Ember.computed('numberProducts', 'isSubscriptions', function() {
++    if (this.get('isSubscriptions')) {
++      return (this.get('numberProducts') + 2);
+     }
+   }),
+ 
+   // calculate temporary without isSubscriptions
+-  stepNumberReviewTemp: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', function() {
+-    if (this.get('isRhev') && this.get('isOpenStack') && this.get('isCloudForms')) {
+-      return 6;
+-    } else if ((this.get('isRhev') && this.get('isOpenStack')) || (this.get('isRhev') && this.get('isCloudForms')) ||  (this.get('isOpenStack') && this.get('isCloudForms')))  {
+-      return 5;
+-    } else if (this.get('isRhev') || this.get('isOpenStack') || this.get('isCloudForms')) {
+-      return 4;
++  stepNumberReviewTemp: Ember.computed('numberProducts', 'isSubscriptions', function() {
++    if (this.get('isSubscriptions')) {
++      return (this.get('numberProducts') + 3);
+     } else {
+-      return 3;
++      return (this.get('numberProducts') + 2);
+     }
+   }),
+ 
+@@ -135,25 +160,26 @@ export default Ember.Mixin.create({
+     }
+   }),
+ 
+-  step2RouteName: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', function() {
++  step2RouteName: Ember.computed('isRhev', 'isOpenStack', function() {
+     if (this.get('isRhev')) {
+       return 'rhev';
+     } else if (this.get('isOpenStack')) {
+       return 'openstack';
+-    } else if (this.get('isCloudForms')) {
+-      return 'cloudforms';
+     }
+   }),
+ 
+   step3RouteName: Ember.computed(
+     'step2RouteName',
+     'isOpenStack',
++    'isOpenShift',
+     'isCloudForms',
+     'isSubscriptions',
+     function() {
+       if (this.get('step2RouteName') === 'rhev') {
+         if (this.get('isOpenStack')) {
+           return 'openstack';
++        } else if (this.get('isOpenShift')) {
++          return 'openshift';
+         } else if (this.get('isCloudForms')) {
+           return 'cloudforms';
+         } else if (this.get('isSubscriptions')) {
+@@ -162,19 +188,15 @@ export default Ember.Mixin.create({
+           return 'review';
+         }
+       } else if (this.get('step2RouteName') === 'openstack') {
+-        if (this.get('isCloudForms')) {
++        if (this.get('isOpenShift')) {
++          return 'openshift';
++        } else if (this.get('isCloudForms')) {
+           return 'cloudforms';
+         } else if (this.get('isSubscriptions')) {
+           return 'subscriptions';
+         } else {
+           return 'review';
+         }
+-      } else if (this.get('step2RouteName') === 'cloudforms') {
+-        if (this.get('isSubscriptions')) {
+-          return 'subscriptions';
+-        } else {
+-          return 'review';
+-        }
+       }
+     }
+   )
+diff --git a/fusor-ember-cli/app/mixins/openshift-mixin.js b/fusor-ember-cli/app/mixins/openshift-mixin.js
+new file mode 100644
+index 0000000..c6f83a7
+--- /dev/null
++++ b/fusor-ember-cli/app/mixins/openshift-mixin.js
+@@ -0,0 +1,218 @@
++import Ember from 'ember';
++
++export default Ember.Mixin.create({
++
++  openshiftInstallLoc: Ember.computed.alias("model.openshift_install_loc"),
++  cfmeInstallLoc: Ember.computed.alias("model.cfme_install_loc"),
++  isRhev: Ember.computed.alias("model.deploy_rhev"),
++  isOpenStack: Ember.computed.alias("model.deploy_openstack"),
++  isCloudForms: Ember.computed.alias("model.deploy_cfme"),
++
++  numNodes: Ember.computed.alias("model.numNodes"),
++  numMasterNodes: Ember.computed.alias("model.openshift_number_master_nodes"),
++  numWorkerNodes: Ember.computed.alias("model.openshift_number_worker_nodes"),
++
++  storageSize: Ember.computed.alias("model.openshift_storage_size"),
++
++  masterVcpu: Ember.computed.alias("model.openshift_master_vcpu"),
++  nodeVcpu: Ember.computed.alias("model.openshift_node_vcpu"),
++  vcpuAvailable: Ember.computed.alias("model.openshift_available_vcpu"),
++
++  masterRam: Ember.computed.alias("model.openshift_master_ram"),
++  nodeRam: Ember.computed.alias("model.openshift_node_ram"),
++  ramAvailable: Ember.computed.alias("model.openshift_available_ram"),
++
++  masterDisk: Ember.computed.alias("model.openshift_master_disk"),
++  nodeDisk: Ember.computed.alias("model.openshift_node_disk"),
++  cfmeDisk: Ember.computed.alias("model.cfmeDisk"),
++
++  ignoreCfme: Ember.computed("isCloudForms", "isRhev", "isOpenStack",
++                             "openshiftInstallLoc", "cfmeInstallLoc", function() {
++    // ignore if CFME is not selected OR if both RHEV and OSP are selected
++    // but locations of CFME and OSE are different
++    return (!this.get('isCloudForms') ||
++            (this.get('isRhev') && this.get('isOpenStack') &&
++             ((this.get('openshiftInstallLoc') === 'RHEV' && this.get('cfmeInstallLoc') === 'OpenStack') ||
++              (this.get('openshiftInstallLoc') === 'OpenStack' && this.get('cfmeInstallLoc') === 'RHEV'))));
++  }),
++  substractCfme: Ember.computed.not('ignoreCfme'),
++
++  diskAvailableMinusCfme: Ember.computed("model.openshift_available_disk", "cfmeDisk", function() {
++    return this.get("model.openshift_available_disk") - this.get("cfmeDisk");
++  }),
++
++  diskAvailable: Ember.computed("model.openshift_available_disk",
++                                "ignoreCfme",
++                                "diskAvailableMinusCfme", function() {
++    if (this.get('ignoreCfme')) {
++      return this.get('model.openshift_available_disk');
++    } else {
++      return this.get('diskAvailableMinusCfme');
++    }
++  }),
++
++  vcpuNeeded: Ember.computed('numMasterNodes', 'numWorkerNodes', 'masterVcpu', 'nodeVcpu', function() {
++    if ((this.get('numMasterNodes') > 0) && (this.get('masterVcpu') > 0) &&
++        (this.get('numWorkerNodes') >= 0) && (this.get('nodeVcpu') > 0) ) {
++      return ((this.get('numMasterNodes') * this.get('masterVcpu')) +
++              (this.get('numWorkerNodes') * this.get('nodeVcpu')));
++    } else {
++      return 0;
++    }
++  }),
++
++  ramNeeded: Ember.computed('numMasterNodes', 'numWorkerNodes', 'masterRam', 'nodeRam', function() {
++    if ((this.get('numMasterNodes') > 0) && (this.get('masterRam') > 0) &&
++        (this.get('numWorkerNodes') >= 0) && (this.get('nodeRam') > 0) ) {
++      return ((this.get('numMasterNodes') * this.get('masterRam')) +
++               (this.get('numWorkerNodes') * this.get('nodeRam')));
++    } else {
++      return 0;
++    }
++  }),
++
++  diskNeeded: Ember.computed('numMasterNodes', 'numWorkerNodes', 'masterDisk', 'nodeDisk', 'storageSize', function() {
++    if ((this.get('numMasterNodes') > 0) && (this.get('masterDisk') > 0) &&
++        (this.get('numWorkerNodes') >= 0) && (this.get('nodeDisk') > 0) && (this.get('storageSize') > 0)) {
++      return ((this.get('numMasterNodes') * this.get('masterDisk')) +
++              (this.get('numWorkerNodes') * this.get('nodeDisk')) +
++              (this.get('numWorkerNodes') * this.get('storageSize')));
++    } else {
++      return 0;
++    }
++  }),
++
++  vcpu1Needed: Ember.computed('masterVcpu', function() {
++      return parseInt(this.get('masterVcpu'));
++  }),
++  vcpu2Needed: Ember.computed('vcpu1Needed', 'nodeVcpu', function() {
++      return this.get('vcpu1Needed') + parseInt(this.get('nodeVcpu'));
++  }),
++  vcpu3Needed: Ember.computed('vcpu2Needed', 'nodeVcpu', function() {
++      return this.get('vcpu2Needed') + parseInt(this.get('nodeVcpu'));
++  }),
++  vcpu4Needed: Ember.computed('vcpu3Needed', 'nodeVcpu', function() {
++      return this.get('vcpu3Needed') + parseInt(this.get('nodeVcpu'));
++  }),
++  vcpu5Needed: Ember.computed('vcpu4Needed', 'nodeVcpu', function() {
++      return this.get('vcpu4Needed') + parseInt(this.get('nodeVcpu'));
++  }),
++
++  ram1Needed: Ember.computed('masterRam', function() {
++      return parseInt(this.get('masterRam'));
++  }),
++  ram2Needed: Ember.computed('ram1Needed', 'nodeRam', function() {
++      return this.get('ram1Needed') + parseInt(this.get('nodeRam'));
++  }),
++  ram3Needed: Ember.computed('ram2Needed', 'nodeRam', function() {
++      return this.get('ram2Needed') + parseInt(this.get('nodeRam'));
++  }),
++  ram4Needed: Ember.computed('ram3Needed', 'nodeRam', function() {
++      return this.get('ram3Needed') + parseInt(this.get('nodeRam'));
++  }),
++  ram5Needed: Ember.computed('ram4Needed', 'nodeRam', function() {
++      return this.get('ram4Needed') + parseInt(this.get('nodeRam'));
++  }),
++
++  disk1Needed: Ember.computed('masterDisk', function() {
++      return parseInt(this.get('masterDisk'));
++  }),
++  disk2Needed: Ember.computed('disk1Needed', 'nodeDisk', function() {
++      return this.get('disk1Needed') + parseInt(this.get('nodeDisk'));
++  }),
++  disk3Needed: Ember.computed('disk2Needed', 'nodeDisk', function() {
++      return this.get('disk2Needed') + parseInt(this.get('nodeDisk'));
++  }),
++  disk4Needed: Ember.computed('disk3Needed', 'nodeDisk', function() {
++      return this.get('disk3Needed') + parseInt(this.get('nodeDisk'));
++  }),
++  disk5Needed: Ember.computed('disk4Needed', 'nodeDisk', function() {
++      return this.get('disk4Needed') + parseInt(this.get('nodeDisk'));
++  }),
++
++  isVcpu1OverCapacity: Ember.computed('vcpu1Needed', 'vcpuAvailable', function() {
++      return (this.get('vcpu1Needed') > this.get('vcpuAvailable'));
++  }),
++  isVcpu2OverCapacity: Ember.computed('vcpu2Needed', 'vcpuAvailable', function() {
++      return (this.get('vcpu2Needed') > this.get('vcpuAvailable'));
++  }),
++  isVcpu3OverCapacity: Ember.computed('vcpu3Needed', 'vcpuAvailable', function() {
++      return (this.get('vcpu3Needed') > this.get('vcpuAvailable'));
++  }),
++  isVcpu4OverCapacity: Ember.computed('vcpu4Needed', 'vcpuAvailable', function() {
++      return (this.get('vcpu4Needed') > this.get('vcpuAvailable'));
++  }),
++  isVcpu5OverCapacity: Ember.computed('vcpu5Needed', 'vcpuAvailable', function() {
++      return (this.get('vcpu5Needed') > this.get('vcpuAvailable'));
++  }),
++
++  isRam1OverCapacity: Ember.computed('ram1Needed', 'ramAvailable', function() {
++      return (this.get('ram1Needed') > this.get('ramAvailable'));
++  }),
++  isRam2OverCapacity: Ember.computed('ram2Needed', 'ramAvailable', function() {
++      return (this.get('ram2Needed') > this.get('ramAvailable'));
++  }),
++  isRam3OverCapacity: Ember.computed('ram3Needed', 'ramAvailable', function() {
++      return (this.get('ram3Needed') > this.get('ramAvailable'));
++  }),
++  isRam4OverCapacity: Ember.computed('ram4Needed', 'ramAvailable', function() {
++      return (this.get('ram4Needed') > this.get('ramAvailable'));
++  }),
++  isRam5OverCapacity: Ember.computed('ram5Needed', 'ramAvailable', function() {
++      return (this.get('ram5Needed') > this.get('ramAvailable'));
++  }),
++
++  isDisk1OverCapacity: Ember.computed('disk1Needed', 'diskAvailable', function() {
++      return (this.get('disk1Needed') > this.get('diskAvailable'));
++  }),
++  isDisk2OverCapacity: Ember.computed('disk2Needed', 'diskAvailable', function() {
++      return (this.get('disk2Needed') > this.get('diskAvailable'));
++  }),
++  isDisk3OverCapacity: Ember.computed('disk3Needed', 'diskAvailable', function() {
++      return (this.get('disk3Needed') > this.get('diskAvailable'));
++  }),
++  isDisk4OverCapacity: Ember.computed('disk4Needed', 'diskAvailable', function() {
++      return (this.get('disk4Needed') > this.get('diskAvailable'));
++  }),
++  isDisk5OverCapacity: Ember.computed('disk5Needed', 'diskAvailable', function() {
++      return (this.get('disk5Needed') > this.get('diskAvailable'));
++  }),
++
++  isOver1Capacity: Ember.computed('isVcpu1OverCapacity',
++                                 'isRam1OverCapacity',
++                                 'isDisk1OverCapacity', function() {
++      return (this.get('isVcpu1OverCapacity') ||
++              this.get('isRam1OverCapacity') ||
++              this.get('isDisk1OverCapacity'));
++  }),
++  isOver2Capacity: Ember.computed('isVcpu2OverCapacity',
++                                 'isRam2OverCapacity',
++                                 'isDisk2OverCapacity', function() {
++      return (this.get('isVcpu2OverCapacity') ||
++              this.get('isRam2OverCapacity') ||
++              this.get('isDisk2OverCapacity'));
++  }),
++  isOver3Capacity: Ember.computed('isVcpu3OverCapacity',
++                                 'isRam3OverCapacity',
++                                 'isDisk3OverCapacity', function() {
++      return (this.get('isVcpu3OverCapacity') ||
++              this.get('isRam3OverCapacity') ||
++              this.get('isDisk3OverCapacity'));
++  }),
++  isOver4Capacity: Ember.computed('isVcpu4OverCapacity',
++                                 'isRam4OverCapacity',
++                                 'isDisk4OverCapacity', function() {
++      return (this.get('isVcpu4OverCapacity') ||
++              this.get('isRam4OverCapacity') ||
++              this.get('isDisk4OverCapacity'));
++  }),
++  isOver5Capacity: Ember.computed('isVcpu5OverCapacity',
++                                 'isRam5OverCapacity',
++                                 'isDisk5OverCapacity', function() {
++      return (this.get('isVcpu5OverCapacity') ||
++              this.get('isRam5OverCapacity') ||
++              this.get('isDisk5OverCapacity'));
++  }),
++
++
++});
+diff --git a/fusor-ember-cli/app/mixins/start-controller-mixin.js b/fusor-ember-cli/app/mixins/start-controller-mixin.js
+index 30c73cb..61cb0bc 100644
+--- a/fusor-ember-cli/app/mixins/start-controller-mixin.js
++++ b/fusor-ember-cli/app/mixins/start-controller-mixin.js
+@@ -13,8 +13,8 @@ export default Ember.Mixin.create({
+   satelliteTabRouteName: null,
+ 
+   // disable Next button if none selected
+-  disableNextOnStart: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', function () {
+-    return (!(this.get('isRhev') || this.get('isOpenStack') || this.get('isCloudForms')));
++  disableNextOnStart: Ember.computed('isRhev', 'isOpenStack', 'isCloudForms', 'isOpenShift', function () {
++    return (!(this.get('isRhev') || this.get('isOpenStack') || this.get('isCloudForms') || this.get('isOpenShift')));
+   }),
+ 
+   // names
+@@ -42,6 +42,8 @@ export default Ember.Mixin.create({
+     if (this.get('isUpstream')) { return "ManageIQ"; } else { return "CloudForms"; }
+   }),
+ 
++  nameOpenShift: "OpenShift",
++
+   // images
+   imgRhev: Ember.computed('isUpstream', function() {
+     if (this.get('isUpstream')) { return "/assets/r/ovirt-640-210.png"; } else { return "/assets/r/rhci-rhev-640-210.png"; }
+@@ -53,6 +55,8 @@ export default Ember.Mixin.create({
+ 
+   imgCloudForms: Ember.computed('isUpstream', function() {
+     if (this.get('isUpstream')) { return "/assets/r/manageiq-640-210.png"; } else { return "/assets/r/rhci-cloudforms-640-210.png"; }
+-  })
++  }),
++
++  imgOpenShift: "/assets/r/openshift_logo-300x75.png"
+ 
+ });
+diff --git a/fusor-ember-cli/app/models/deployment.js b/fusor-ember-cli/app/models/deployment.js
+index b6fc777..76b73d5 100644
+--- a/fusor-ember-cli/app/models/deployment.js
++++ b/fusor-ember-cli/app/models/deployment.js
+@@ -11,6 +11,7 @@ export default DS.Model.extend({
+   deploy_rhev: DS.attr('boolean'),
+   deploy_cfme: DS.attr('boolean'),
+   deploy_openstack: DS.attr('boolean'),
++  deploy_openshift: DS.attr('boolean'),
+ 
+   is_disconnected: DS.attr('boolean'),
+   rhev_is_self_hosted: DS.attr('boolean'),
+@@ -65,6 +66,42 @@ export default DS.Model.extend({
+   cdn_url: DS.attr('string'),
+   manifest_file: DS.attr('string'),
+ 
++  openshift_install_loc: DS.attr('string'),
++
++  openshift_number_master_nodes: DS.attr('number'),
++  openshift_number_worker_nodes: DS.attr('number'),
++
++  numNodes: Ember.computed('openshift_number_master_nodes',
++                           'openshift_number_worker_nodes', function() {
++      return this.get('openshift_number_master_nodes') + this.get('openshift_number_worker_nodes');
++  }),
++
++  openshift_storage_size: DS.attr('number'),
++  openshift_username: DS.attr('string'),
++  openshift_master_vcpu: DS.attr('number'),
++  openshift_master_ram: DS.attr('number'),
++  openshift_master_disk: DS.attr('number'),
++  openshift_node_vcpu: DS.attr('number'),
++  openshift_node_ram: DS.attr('number'),
++  openshift_node_disk: DS.attr('number'),
++  openshift_available_vcpu: DS.attr('number'),
++  openshift_available_ram: DS.attr('number'),
++  openshift_available_disk: DS.attr('number'),
++  openshift_storage_type: DS.attr('string'),
++  openshift_storage_name: DS.attr('string'),
++  openshift_storage_desc: DS.attr('string'),
++  openshift_export_path: DS.attr('string'),
++
++  cloudforms_vcpu: DS.attr('number'),
++  cloudforms_ram: DS.attr('number'),
++  cloudforms_vm_disk_size: DS.attr('number'),
++  cloudforms_db_disk_size: DS.attr('number'),
++
++  cfmeDisk: Ember.computed('cloudforms_vm_disk_size',
++                           'cloudforms_db_disk_size', function() {
++      return this.get('cloudforms_vm_disk_size') + this.get('cloudforms_db_disk_size');
++  }),
++
+   created_at: DS.attr('date'),
+   updated_at: DS.attr('date'),
+ 
+diff --git a/fusor-ember-cli/app/router.js b/fusor-ember-cli/app/router.js
+index b1bc9ad..50be3af 100644
+--- a/fusor-ember-cli/app/router.js
++++ b/fusor-ember-cli/app/router.js
+@@ -52,6 +52,10 @@ export default Router.map(function() {
+       this.route('where-install', {resetNamespace: true});
+       this.route('cfme-configuration', { path: 'configuration' });
+     });
++    this.route('openshift', {resetNamespace: true}, function() {
++      this.route('openshift-nodes', { path: 'nodes' });
++      this.route('openshift-configuration', { path: 'configuration' });
++    });
+     this.route('subscriptions', {resetNamespace: true}, function() {
+       this.route('credentials');
+       this.route('management-application', function() {
+diff --git a/fusor-ember-cli/app/routes/deployment-new/start.js b/fusor-ember-cli/app/routes/deployment-new/start.js
+index 218e3ed..2c0f337 100644
+--- a/fusor-ember-cli/app/routes/deployment-new/start.js
++++ b/fusor-ember-cli/app/routes/deployment-new/start.js
+@@ -5,6 +5,8 @@ export default Ember.Route.extend({
+   setupController(controller, model) {
+     controller.set('model', model);
+     controller.set('satelliteTabRouteName', 'deployment-new.satellite.index');
++    controller.set('isDisabledOpenShift', true);
++    controller.set('isDisabledCfme', true);
+   },
+ 
+   activate() {
+diff --git a/fusor-ember-cli/app/routes/deployment.js b/fusor-ember-cli/app/routes/deployment.js
+index 8d6c4cb..0f55311 100644
+--- a/fusor-ember-cli/app/routes/deployment.js
++++ b/fusor-ember-cli/app/routes/deployment.js
+@@ -21,6 +21,8 @@ export default Ember.Route.extend(DeploymentRouteMixin, {
+     controller.set('confirmOvercloudPassword', model.get('openstack_overcloud_password'));
+ 
+     this.loadOpenStack(controller, model);
++    this.loadOpenshiftDefaults(controller, model);
++    this.loadCloudFormsDefaults(controller, model);
+     // copied from setupController in app/routes/subscriptions/credentials.js
+     // to fix bug of Review Tab being disabled on refresh and needing to click
+     // on subscriptions to enable it
+@@ -44,6 +46,66 @@ export default Ember.Route.extend(DeploymentRouteMixin, {
+ 
+   },
+ 
++  loadCloudFormsDefaults(controller, model) {
++    // GET from API v2 CFME settings for Foreman/Sat6 - if CFME is selected
++    if (model.get('deploy_cfme')) {
++      request('api/v2/settings?search=cloudforms').then(function(settings) {
++        var results = settings['results'];
++        if (!(model.get('cloudforms_vcpu') > 0)) {
++          model.set('cloudforms_vcpu', results.findBy('name', 'cloudforms_vcpu').value);
++        }
++        if (!(model.get('cloudforms_ram') > 0)) {
++          model.set('cloudforms_ram', results.findBy('name', 'cloudforms_ram').value);
++        }
++        if (!(model.get('cloudforms_vm_disk_size') > 0)) {
++          model.set('cloudforms_vm_disk_size', results.findBy('name', 'cloudforms_vm_disk_size').value);
++        }
++        if (!(model.get('cloudforms_db_disk_size') > 0)) {
++          model.set('cloudforms_db_disk_size', results.findBy('name', 'cloudforms_db_disk_size').value);
++        }
++      });
++    }
++  },
++
++  loadOpenshiftDefaults(controller, model) {
++    // GET from API v2 OSE settings for Foreman/Sat6
++    if (model.get('deploy_openshift')) {
++      request('api/v2/settings?search=openshift').then(function(settings) {
++        var results = settings['results'];
++        if (!(model.get('openshift_master_vcpu') > 0)) {
++          model.set('openshift_master_vcpu', results.findBy('name', 'openshift_master_vcpu').value);
++        }
++        if (!(model.get('openshift_master_ram') > 0)) {
++          model.set('openshift_master_ram', results.findBy('name', 'openshift_master_ram').value);
++        }
++        if (!(model.get('openshift_master_disk') > 0)) {
++          model.set('openshift_master_disk', results.findBy('name', 'openshift_master_disk').value);
++        }
++        if (!(model.get('openshift_node_vcpu') > 0)) {
++          model.set('openshift_node_vcpu', results.findBy('name', 'openshift_node_vcpu').value);
++        }
++        if (!(model.get('openshift_node_ram') > 0)) {
++          model.set('openshift_node_ram', results.findBy('name', 'openshift_node_ram').value);
++        }
++        if (!(model.get('openshift_node_disk') > 0)) {
++          model.set('openshift_node_disk', results.findBy('name', 'openshift_node_disk').value);
++        }
++      });
++
++      // set default values 1 Master, 1 Worker, 20GB storage for OSE
++      if (!(model.get('openshift_number_master_nodes') > 0)) {
++        model.set('openshift_number_master_nodes', 1);
++      }
++      if (!(model.get('openshift_number_worker_nodes') > 0)) {
++        model.set('openshift_number_worker_nodes', 1);
++      }
++      if (!(model.get('openshift_storage_size') > 0)) {
++        model.set('openshift_storage_size', 20);
++      }
++
++    }
++  },
++
+   loadOpenStack(controller, model) {
+     var self = this;
+     if (model.get('deploy_openstack') && !Ember.isBlank(model.get('openstack_undercloud_password'))) {
+diff --git a/fusor-ember-cli/app/routes/deployment/start.js b/fusor-ember-cli/app/routes/deployment/start.js
+index e8e6852..abcd673 100644
+--- a/fusor-ember-cli/app/routes/deployment/start.js
++++ b/fusor-ember-cli/app/routes/deployment/start.js
+@@ -5,6 +5,13 @@ export default Ember.Route.extend({
+   setupController(controller, model) {
+     controller.set('model', model);
+     controller.set('satelliteTabRouteName', 'satellite.index');
++    if (model.get('deploy_rhev') || model.get('deploy_openstack')) {
++      controller.set('isDisabledOpenShift', false);
++      controller.set('isDisabledCfme', false);
++    } else {
++      controller.set('isDisabledOpenShift', true);
++      controller.set('isDisabledCfme', true);
++    }
+   },
+ 
+   activate() {
+diff --git a/fusor-ember-cli/app/routes/openshift.js b/fusor-ember-cli/app/routes/openshift.js
+new file mode 100644
+index 0000000..26d9f31
+--- /dev/null
++++ b/fusor-ember-cli/app/routes/openshift.js
+@@ -0,0 +1,4 @@
++import Ember from 'ember';
++
++export default Ember.Route.extend({
++});
+diff --git a/fusor-ember-cli/app/routes/openshift/index.js b/fusor-ember-cli/app/routes/openshift/index.js
+new file mode 100644
+index 0000000..ddaac1b
+--- /dev/null
++++ b/fusor-ember-cli/app/routes/openshift/index.js
+@@ -0,0 +1,7 @@
++import Ember from 'ember';
++
++export default Ember.Route.extend({
++  beforeModel() {
++    this.transitionTo('openshift.openshift-nodes');
++  }
++});
+diff --git a/fusor-ember-cli/app/routes/openshift/openshift-configuration.js b/fusor-ember-cli/app/routes/openshift/openshift-configuration.js
+new file mode 100644
+index 0000000..6fd24a2
+--- /dev/null
++++ b/fusor-ember-cli/app/routes/openshift/openshift-configuration.js
+@@ -0,0 +1,19 @@
++import Ember from 'ember';
++
++export default Ember.Route.extend({
++
++  setupController(controller, model) {
++    controller.set('model', model);
++    if (Ember.isEmpty(model.get('openshift_storage_type'))) {
++      model.set('openshift_storage_type', 'NFS');
++    }
++    if (Ember.isEmpty(model.get('openshift_username'))) {
++      model.set('openshift_username', 'cloudsuite-install');
++    }
++  },
++
++  deactivate() {
++    return this.send('saveDeployment', null);
++  }
++
++});
+diff --git a/fusor-ember-cli/app/routes/openshift/openshift-nodes.js b/fusor-ember-cli/app/routes/openshift/openshift-nodes.js
+new file mode 100644
+index 0000000..bd67091
+--- /dev/null
++++ b/fusor-ember-cli/app/routes/openshift/openshift-nodes.js
+@@ -0,0 +1,40 @@
++import Ember from 'ember';
++import request from 'ic-ajax';
++
++export default Ember.Route.extend({
++
++  setupController(controller, model) {
++    controller.set('model', model);
++
++    var isRhev = this.controllerFor('deployment').get('isRhev');
++    var isOpenStack = this.controllerFor('deployment').get('isOpenStack');
++    if (isRhev && !(isOpenStack)) {
++      model.set('openshift_install_loc', 'RHEV');
++    } else if (!(isRhev) && isOpenStack) {
++      model.set('openshift_install_loc', 'OpenStack');
++    }
++
++    // TODO pull from API resources available
++    var result = { vcpuAvailabe: 8,
++                   ramAvailable: 32,
++                   diskAvailable: 250 };
++
++    if (!(model.get('openshift_available_vcpu') > 0)) {
++      model.set('openshift_available_vcpu', result['vcpuAvailabe']);
++    }
++    if (!(model.get('openshift_available_ram') > 0)) {
++      model.set('openshift_available_ram', result['ramAvailable']);
++    }
++    if (!(model.get('openshift_available_disk') > 0)) {
++      model.set('openshift_available_disk', result['diskAvailable']);
++    }
++
++  },
++
++  deactivate() {
++    return this.send('saveDeployment', null);
++  }
++
++});
++
++
+diff --git a/fusor-ember-cli/app/styles/custom.scss b/fusor-ember-cli/app/styles/custom.scss
+index f24ae29..d99a6e8 100644
+--- a/fusor-ember-cli/app/styles/custom.scss
++++ b/fusor-ember-cli/app/styles/custom.scss
+@@ -11,12 +11,14 @@ $error-color: #cc0000;
+ }
+ 
+ .rhci-footer-selected{
+-  background-color: #eee; /*#5cb85c*/
++  background-color: #0099d3;
++  color: #ffffff;
+   vertical-align: middle;
+ }
+ 
+ .rhci-footer-unselected{
+   background-color:#eee;
++  color: #0099d3;
+ }
+ 
+ .rhci-footer-box {
+@@ -32,20 +34,20 @@ $error-color: #cc0000;
+ }
+ 
+ i.fa-check {
+-  color: #0099d3;
++  color: #ffffff;
+ }
+ 
+ .rhci-install-footer {
+-  color: #0099d3;
+   font-size: 130%;
+ }
+ 
+ .rhci-item {
+   background-color:#eee;
++  margin:2px;
+ }
+ 
+ .rhci-item-selected {
+-  border-bottom: solid 6px #0099d3;
++  /*border-: solid 6px #0099d3;*/
+ }
+ 
+ .subscriptions_needed {
+@@ -519,3 +521,167 @@ table.fusor-table {
+   font-style: italic;
+   font-weight: lighter;
+ }
++
++.right-start-col {
++  margin-left: -38px;
++}
++
++.rhci-item-desc {
++  padding: 10px;
++}
++
++.rhci-product-image {
++  height: 210px;
++}
++
++.button-selection {
++  border: solid 1px #0099d3;
++  background-color: #eee;
++  color: #0099d3;
++  text-align: center;
++  display: inline-block;
++  min-width: 30px;
++  padding: 5px;
++  margin-right: 5px;
++  cursor: pointer;
++}
++
++.button-disabled {
++  border: solid 1px #6dd7ff;
++  color: #6dd7ff;
++  background-color: #f7f7f7;
++  cursor: not-allowed;
++}
++
++.button-selection-selected {
++  background-color: #0099d3;
++  color: #fff;
++}
++
++.progress-bar-gray {
++  background-color: #bbb !important;
++}
++
++.progress-bar-black {
++  background-color: #000 !important;
++  color: #fff;
++}
++
++.input-ose {
++  width: 20px;
++  text-align: center;
++}
++
++.ose-env-summary {
++  margin-top: 30px;
++  margin-left: 20px;
++}
++
++.node-details {
++  margin-top: 30px;
++  margin-left: 20px;
++}
++
++.env-summary-title {
++  background-color: #eee;
++  margin-left: 0px;
++  padding: 10px 10px;
++  border: solid 1px #000;
++}
++
++.env-summary-body {
++  margin-left: 0px;
++  padding: 10px 10px 0px 10px;
++  border-left: solid 1px #000;
++  border-right: solid 1px #000;
++}
++
++.env-summary-progressbars {
++  margin-left: 0px;
++  padding: 10px 30px 10px 20px;
++  border-left: solid 1px #000;
++  border-right: solid 1px #000;
++  border-bottom: solid 1px #000;
++}
++
++.node-details-body {
++  margin-left: 0px;
++  padding: 10px 30px 10px 20px;
++  border-left: solid 1px #000;
++  border-right: solid 1px #000;
++  border-bottom: solid 1px #000;
++}
++
++.ose-help-msg {
++  padding-left: 30px;
++  font-style: italic;
++}
++
++.env-summary-needed-available {
++  padding-bottom: 8px;
++  padding-right: -15px;
++}
++
++.amt-needed {
++  position: absolute;
++  top: 0px;
++  left: 7px;
++  height: 20px;
++}
++.amt-available {
++  position: absolute;
++  top: 0px;
++  right: 10px;
++  height: 20px;
++}
++
++.needed-available-bar {
++  position: absolute;
++  top: 0px;
++  left: 0px;
++  height: 20px;
++}
++
++.label-needed-available {
++  position: absolute;
++  top: 0px;
++  left: 10px;
++  height: 20px;
++}
++
++.light-gray-background {
++  position: absolute;
++  top: 0px;
++  left: 0px;
++  height: 20px;
++  width: 100%;
++  background-color: #eee;
++}
++
++.white {
++  color: #fff;
++}
++
++.black {
++  color: #000;
++}
++
++.node-details-col {
++  padding-left: 10px;
++}
++
++h1.num-ose-node {
++  padding: 0px;
++  margin: 0px;
++  font-weight: bold;
++  font-size: 36px;
++}
++
++.node-details-block {
++  padding-left: 40px;
++}
++
++.ose-node-line {
++  padding-top: 5px;
++  min-height: 20px;
++}
+diff --git a/fusor-ember-cli/app/templates/components/button-selection.hbs b/fusor-ember-cli/app/templates/components/button-selection.hbs
+new file mode 100644
+index 0000000..eff74e7
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/components/button-selection.hbs
+@@ -0,0 +1,7 @@
++{{#if disabled}}
++    {{#tool-tip title="Not enough available resources in environment"}}
++        {{label}}
++    {{/tool-tip}}
++{{else}}
++    {{label}}
++{{/if}}
+\ No newline at end of file
+diff --git a/fusor-ember-cli/app/templates/components/node-details-block.hbs b/fusor-ember-cli/app/templates/components/node-details-block.hbs
+new file mode 100644
+index 0000000..8e10bf8
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/components/node-details-block.hbs
+@@ -0,0 +1,31 @@
++<h1 class='num-ose-node pull-left'>{{numNodes}}</h1>
++
++<div class='node-details-block'>
++
++  Each {{typeNode}} node has:
++  <br />
++
++  {{ose-node-detail-line label='vCPU'
++                         value=valueVcpu
++                         isEditMode=isEditMode}}
++
++  {{ose-node-detail-line label='RAM'
++                         value=valueRam
++                         isEditMode=isEditMode
++                         suffix='GB'}}
++
++  {{ose-node-detail-line label='Disk'
++                         value=valueDisk
++                         isEditMode=isEditMode
++                         suffix='GB'}}
++
++  {{#if storageSize}}
++    <div class='row ose-node-line'>
++      <div class="col-md-1"></div>
++      <div class='col-md-9'>
++        {{storageSize}} GB for Docker
++      </div>
++    </div>
++  {{/if}}
++
++</div>
+diff --git a/fusor-ember-cli/app/templates/components/node-details.hbs b/fusor-ember-cli/app/templates/components/node-details.hbs
+new file mode 100644
+index 0000000..a8a8412
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/components/node-details.hbs
+@@ -0,0 +1,40 @@
++<div class='row'>
++  <div class='col-xs-12 col-sm-10 col-md-10 col-lg-7 env-summary-title'>
++    Node Details
++    <div class='pull-right'>
++      <button {{action "editOseNodeDetails"}} class='btn btn-default btn-sm'>
++        {{customEditLabel}}
++      </button>
++    </div>
++  </div>
++</div>
++
++<div class='row'>
++  <div class='col-xs-10 col-sm-10 col-md-10 col-lg-7 node-details-body'>
++
++    <div class='row'>
++      <div class='col-xs-6 col-sm-6 col-md-6 col-lg-6 node-details-col'>
++        {{node-details-block numNodes=numMasterNodes
++                             valueVcpu=masterVcpu
++                             valueRam=masterRam
++                             valueDisk=masterDisk
++                             typeNode='master'
++                             isEditMode=isEditMode}}
++      </div>
++
++      <div class='col-xs-6 col-sm-6 col-md-6 col-lg-6'>
++        {{node-details-block numNodes=numWorkerNodes
++                             valueVcpu=nodeVcpu
++                             valueRam=nodeRam
++                             valueDisk=nodeDisk
++                             typeNode='worker'
++                             isEditMode=isEditMode
++                             storageSize=storageSize}}
++      </div>
++    </div>
++
++  </div>
++</div>
++
++
++
+diff --git a/fusor-ember-cli/app/templates/components/ose-env-summary.hbs b/fusor-ember-cli/app/templates/components/ose-env-summary.hbs
+new file mode 100644
+index 0000000..335e2a5
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/components/ose-env-summary.hbs
+@@ -0,0 +1,25 @@
++<div class='row'>
++  <div class='col-xs-10 col-sm-10 col-md-10 col-lg-7 env-summary-title'>
++    Environment Summary
++    <div class='pull-right'>
++      Node Count: {{numNodes}}
++    </div>
++  </div>
++
++</div>
++<div class='row'>
++  <div class='col-xs-10 col-sm-10 col-md-10 col-lg-7 env-summary-body'>
++    Resources needed:
++    <div class='pull-right'>
++      Resources available:
++    </div>
++  </div>
++</div>
++
++<div class='row'>
++  <div class='col-xs-10 col-sm-10 col-md-10 col-lg-7 env-summary-progressbars'>
++      {{ose-summary-needed-available label='vCPU' needed=vcpuNeeded available=vcpuAvailable storageSize=storageSize}}
++      {{ose-summary-needed-available label='RAM' needed=ramNeeded available=ramAvailable suffix='GB' storageSize=storageSize}}
++      {{ose-summary-needed-available label='Disk' needed=diskNeeded available=diskAvailable suffix='GB' storageSize=storageSize substractCfme=substractCfme cfmeDisk=cfmeDisk}}
++  </div>
++</div>
+diff --git a/fusor-ember-cli/app/templates/components/ose-node-detail-line.hbs b/fusor-ember-cli/app/templates/components/ose-node-detail-line.hbs
+new file mode 100644
+index 0000000..22b07cf
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/components/ose-node-detail-line.hbs
+@@ -0,0 +1,11 @@
++<div class='col-xs-2 col-sm-2 col-md-1'>
++  <strong>{{label}}</strong>
++</div>
++
++<div class='col-xs-4 col-sm-6 col-md-9'>
++  {{#if isEditMode}}
++    {{input value=value class='input-ose'}} {{suffix}}
++  {{else}}
++    {{value}} {{suffix}}
++  {{/if}}
++</div>
+diff --git a/fusor-ember-cli/app/templates/components/ose-summary-needed-available.hbs b/fusor-ember-cli/app/templates/components/ose-summary-needed-available.hbs
+new file mode 100644
+index 0000000..376ff11
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/components/ose-summary-needed-available.hbs
+@@ -0,0 +1,29 @@
++<div class='col-xs-2 col-sm-2 col-md-2 col-lg-2'>
++  <div class='label-needed-available'>
++    <strong>{{label}}</strong>
++  </div>
++</div>
++
++<div class='col-xs-10 col-sm-10 col-md-10 col-lg-10'>
++    <div class='light-gray-background'>
++      &nbsp;
++    </div>
++    <div class="needed-available-bar {{progressBarClass}}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={{percentProgressInt}} style="width: {{styleWidth}};">
++      &nbsp;{{helpText}}
++    </div>
++    <div class="amt-needed {{fontColorClass}}">
++      {{needed}} {{suffix}}
++    </div>
++    <div class='amt-available {{fontColorClass}}'>
++      {{available}} {{suffix}}
++      {{#if showSubstractTooltip}}
++        {{tool-tip srcImage='/assets/r/blue-i.png' title=tooltipDisk}}
++      {{/if}}
++    </div>
++    <div class="ose-help-msg {{helpTextClass}}">
++      {{helpText}}
++      &nbsp;
++    </div>
++</div>
++
++
+diff --git a/fusor-ember-cli/app/templates/components/rhci-item.hbs b/fusor-ember-cli/app/templates/components/rhci-item.hbs
+index 1e56b8d..639d55c 100644
+--- a/fusor-ember-cli/app/templates/components/rhci-item.hbs
++++ b/fusor-ember-cli/app/templates/components/rhci-item.hbs
+@@ -1,11 +1,18 @@
+ <span id="{{cssId}}">
+-  <img src="{{srcImage}}" class="img-responsive {{if isDisabled 'disabledImage'}}">
++  <div class="rhci-product-image">
++    <img src="{{srcImage}}" class="img-responsive {{if isDisabled 'disabledImage'}}">
++  </div>
++
++  <p class="rhci-item-desc">
++      {{desc}}
++  </p>
++
+ 
+   <div class="rhci-footer {{if isChecked 'rhci-footer-selected' 'rhci-footer-unselected'}}">
+        <span class='rhci-install-footer'>
+          {{#if isChecked}}
+            <i class="fa fa-1x fa-check"></i>
+-           Deploy this product
++           Install this product
+          {{/if}}
+        </span>
+   </div>
+diff --git a/fusor-ember-cli/app/templates/components/rhci-start.hbs b/fusor-ember-cli/app/templates/components/rhci-start.hbs
+index 27b68ac..ca08d90 100644
+--- a/fusor-ember-cli/app/templates/components/rhci-start.hbs
++++ b/fusor-ember-cli/app/templates/components/rhci-start.hbs
+@@ -9,20 +9,27 @@
+   </div>
+ </div>
+ 
+-<div class='row' style='height:370px;'>
++<div class='row'>
+ 
+   <div class='col-md-4'>
+-    {{rhci-item srcImage=imgRhev isChecked=isRhev name=nameRhev cssId='is_rhev'}}
++    {{rhci-item srcImage=imgRhev isChecked=isRhev name=nameRhev cssId='is_rhev' desc=descRhev}}
+   </div>
+ 
+-  <div class='col-md-4'>
+-    {{rhci-item srcImage=imgOpenStack isChecked=isOpenStack name=nameOpenStack cssId='is_openstack'}}
++  <div class='col-md-4 right-start-col'>
++    {{rhci-item srcImage=imgOpenStack isChecked=isOpenStack name=nameOpenStack cssId='is_openstack' desc=descOpenstack}}
+   </div>
+ 
++</div>
++
++<div class='row'>
++
+   <div class='col-md-4'>
+-    {{rhci-item srcImage=imgCloudForms isChecked=isCloudForms name=nameCloudForms cssId='is_cloudforms' isDisabled=isDisabledCfme}}
++    {{rhci-item srcImage=imgCloudForms isChecked=isCloudForms name=nameCloudForms cssId='is_cloudforms' isDisabled=isDisabledCfme desc=descCfme}}
+   </div>
+ 
++  <div class='col-md-4 right-start-col'>
++    {{rhci-item srcImage=imgOpenShift isChecked=isOpenShift name=nameOpenShift cssId='is_openshift' isDisabled=isDisabledOpenShift desc=descOpenshift}}
++  </div>
+ </div>
+ 
+ {{#unless isUpstream}}
+diff --git a/fusor-ember-cli/app/templates/components/rhci-wizard.hbs b/fusor-ember-cli/app/templates/components/rhci-wizard.hbs
+index 11b8b6b..d7e98ee 100644
+--- a/fusor-ember-cli/app/templates/components/rhci-wizard.hbs
++++ b/fusor-ember-cli/app/templates/components/rhci-wizard.hbs
+@@ -13,6 +13,10 @@
+     {{wizard-item num=stepNumberOpenstack name=nameOpenStack routeName='openstack' isDisabled=isDisabledOpenstack currentStepNumber=currentStepNumber fullname=fullnameOpenStack}}
+   {{/if}}
+ 
++  {{#if isOpenShift}}
++    {{wizard-item num=stepNumberOpenShift name=nameOpenShift routeName='openshift' isDisabled=isDisabledOpenShift currentStepNumber=currentStepNumber fullname=fullnameOpenShift}}
++  {{/if}}
++
+   {{#if isCloudForms}}
+     {{wizard-item num=stepNumberCloudForms name=nameCloudForms routeName='cloudforms' isDisabled=isDisabledCloudForms currentStepNumber=currentStepNumber fullname=fullnameCloudForms}}
+   {{/if}}
+diff --git a/fusor-ember-cli/app/templates/debug-deployment.hbs b/fusor-ember-cli/app/templates/debug-deployment.hbs
+index d3242f2..1300a76 100644
+--- a/fusor-ember-cli/app/templates/debug-deployment.hbs
++++ b/fusor-ember-cli/app/templates/debug-deployment.hbs
+@@ -35,10 +35,12 @@ isDisabledSubscriptions: {{isDisabledSubscriptions}}
+ <br />
+ isDisabledReview: {{isDisabledReview}}
+ <br />
+-deploy_rhev: {{deploy_rhev}}
++deploy_rhev: {{model.deploy_rhev}}
+ <br />
+-deploy_openstack: {{deploy_openstack}}
++deploy_openstack: {{model.deploy_openstack}}
+ <br />
+-deploy_cfme: {{deploy_cfme}}
++deploy_cfme: {{model.deploy_cfme}}
++<br />
++deploy_openshift: {{model.deploy_openshift}}
+ 
+ <hr />
+diff --git a/fusor-ember-cli/app/templates/deployment.hbs b/fusor-ember-cli/app/templates/deployment.hbs
+index 69150f0..d0edad1 100644
+--- a/fusor-ember-cli/app/templates/deployment.hbs
++++ b/fusor-ember-cli/app/templates/deployment.hbs
+@@ -8,22 +8,27 @@
+                 nameRhev=nameRhev
+                 nameOpenStack=nameOpenStack
+                 nameCloudForms=nameCloudForms
++                nameOpenShift=nameOpenShift
+                 fullnameRhev=fullnameRhev
+                 fullnameOpenStack=fullnameOpenStack
+                 fullnameCloudForms=fullnameCloudForms
++                fullnameOpenShift=fullnameOpenShift
+                 stepNumberRhev=stepNumberRhev
+                 stepNumberOpenstack=stepNumberOpenstack
+                 stepNumberCloudForms=stepNumberCloudForms
++                stepNumberOpenShift=stepNumberOpenShift
+                 stepNumberSubscriptions=stepNumberSubscriptions
+                 stepNumberReview=stepNumberReview
+                 isDisabledRhev=isDisabledRhev
+                 isDisabledOpenstack=isDisabledOpenstack
+                 isDisabledCloudForms=isDisabledCloudForms
++                isDisabledOpenShift=isDisabledOpenShift
+                 isDisabledSubscriptions=isDisabledSubscriptions
+                 isDisabledReview=isDisabledReview
+                 isRhev=isRhev
+                 isOpenStack=isOpenStack
+                 isCloudForms=isCloudForms
++                isOpenShift=isOpenShift
+                 isSubscriptions=isSubscriptions
+                 currentStepNumber=currentStepNumber
+                 errorMsg=errorMsg
+diff --git a/fusor-ember-cli/app/templates/deployment/start.hbs b/fusor-ember-cli/app/templates/deployment/start.hbs
+index 9507470..39b791f 100644
+--- a/fusor-ember-cli/app/templates/deployment/start.hbs
++++ b/fusor-ember-cli/app/templates/deployment/start.hbs
+@@ -1,14 +1,19 @@
+ {{rhci-start isRhev=isRhev
+              isOpenStack=isOpenStack
+              isCloudForms=isCloudForms
++             isOpenShift=isOpenShift
+              nameRedHat=nameRedHat
+              nameRhev=nameRhev
+              nameOpenStack=nameOpenStack
+              nameCloudForms=nameCloudForms
++             nameOpenShift=nameOpenShift
+              imgRhev=imgRhev
+              imgOpenStack=imgOpenStack
+              imgCloudForms=imgCloudForms
++             imgOpenShift=imgOpenShift
+              isUpstream=isUpstream
+              satelliteTabRouteName=satelliteTabRouteName
+              disableNextOnStart=disableNextOnStart
++             isDisabledOpenShift=isDisabledOpenShift
++             isDisabledCfme=isDisabledCfme
+ }}
+diff --git a/fusor-ember-cli/app/templates/openshift.hbs b/fusor-ember-cli/app/templates/openshift.hbs
+new file mode 100644
+index 0000000..fe9f2c0
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/openshift.hbs
+@@ -0,0 +1,11 @@
++{{#wizard-step outlet=outlet}}
++
++      {{#link-to 'openshift.openshift-nodes' tagName='li'}}
++        <a>{{stepNumberOpenShift}}A. Master/Nodes</a>
++      {{/link-to}}
++
++      {{#link-to 'openshift.openshift-configuration' tagName='li' disabled=isInvalidOpenshiftNodes}}
++        <a>{{stepNumberOpenShift}}B. Configuration</a>
++      {{/link-to}}
++
++{{/wizard-step}}
+diff --git a/fusor-ember-cli/app/templates/openshift/openshift-configuration.hbs b/fusor-ember-cli/app/templates/openshift/openshift-configuration.hbs
+new file mode 100644
+index 0000000..e8ae7f7
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/openshift/openshift-configuration.hbs
+@@ -0,0 +1,53 @@
++<p>
++  Select external storage to store the docker registry images.
++</p>
++
++<form class="form form-horizontal">
++
++  {{#base-f label="Storage Type" isRequired=true}}
++
++    {{#radio-button value="NFS" groupValue=model.openshift_storage_type id='nfs'
++                    disabled=isStarted}}
++      <span class="{{if isStarted 'disabled'}}">
++        NFS
++      </span>
++    {{/radio-button}}
++    &nbsp;&nbsp;&nbsp;&nbsp;
++    {{#radio-button value="Gluster" groupValue=model.openshift_storage_type id='gluster' disabled=true}}
++      <span class="disabled">
++        Gluster
++      </span>
++    {{/radio-button}}
++    &nbsp;&nbsp;&nbsp;&nbsp;
++    {{#radio-button value="DoNotUse" groupValue=model.openshift_storage_type id='do_not_use' disabled=true}}
++      <span class="disabled">
++        Do not use
++      </span>
++    {{/radio-button}}
++  {{/base-f}}
++
++  {{#if isNFS}}
++      {{text-f label="Name" value=model.openshift_storage_name isRequired=true cssId='openshift_storage_name' disabled=isStarted isAlphaNumeric=true}}
++      {{text-f label="Description (Optional)" value=model.openshift_storage_desc  cssId='openshift_storage_desc' disabled=isStarted}}
++      {{text-f label="Export Path" value=model.openshift_export_path isRequired=true cssId='openshift_export_path' disabled=isStarted errors=errorsHashExportPath}}
++
++      <br />
++      <p>
++        Set the user account that will be created and used to configure all nodes.
++      </p>
++      {{text-f label="Username" value=model.openshift_username isRequired=true cssId='openshift_username' disabled=isStarted validator=openshiftUsernameValidator}}
++
++  {{else if isGluster}}
++
++  {{else if isDoNotUse}}
++
++  {{/if}}
++
++</form>
++
++{{cancel-back-next backRouteName='openshift.openshift-nodes'
++                   disableBack=false
++                   nextRouteName=nextRouteNameAfterOpenshift
++                   disableNext=disableNextOpenshiftConfig
++                   disableCancel=isStarted
++                   deploymentName=deploymentName}}
+diff --git a/fusor-ember-cli/app/templates/openshift/openshift-nodes.hbs b/fusor-ember-cli/app/templates/openshift/openshift-nodes.hbs
+new file mode 100644
+index 0000000..aceb553
+--- /dev/null
++++ b/fusor-ember-cli/app/templates/openshift/openshift-nodes.hbs
+@@ -0,0 +1,120 @@
++<div class='row'>
++  <div class='col-md-9'>
++
++    <p>
++      Select where to provision the OpenShift Enterprise nodes.
++    </p>
++
++    <div class='ident-radio'>
++      {{#radio-button value="RHEV" groupValue=openshiftInstallLoc changed="openshiftLocationChanged" id="install_on_rhev" disabled=disableRHEVradio}}
++        <span class="{{if disableRHEV 'disabled'}}">
++          Red Hat Enterprise Virtualization
++        </span>
++      {{/radio-button}}
++    </div>
++
++    <div class='ident-radio'>
++      {{#radio-button value="OpenStack" groupValue=openshiftInstallLoc changed="openshiftLocationChanged" id="install_on_openstack" disabled=disableOpenstackradio}}
++        <span class="inline-block {{if disableOpenStack 'disabled'}}">
++          Red Hat Enterprise Linux OpenStack Platform
++        </span>
++      {{/radio-button}}
++    </div>
++
++    <br />
++    <p>
++      Select how many virtual machines should be created as nodes for the OpenShift environment.
++    </p>
++
++    {{button-selection label=1
++                       value=1
++                       groupValue=model.numNodes
++                       changed="numNodesChanged"
++                       disabled=isOver1Capacity}}
++    {{button-selection label=2
++                       value=2
++                       groupValue=model.numNodes
++                       changed="numNodesChanged"
++                       disabled=isOver2Capacity}}
++    {{button-selection label=3
++                       value=3
++                       groupValue=model.numNodes
++                       changed="numNodesChanged"
++                       disabled=isOver3Capacity}}
++    {{button-selection label=4
++                       value=4
++                       groupValue=model.numNodes
++                       changed="numNodesChanged"
++                       disabled=isOver4Capacity}}
++    {{button-selection label=5
++                       value=5
++                       groupValue=model.numNodes
++                       changed="numNodesChanged"
++                       disabled=isOver5Capacity}}
++    <!--<div style='color: #999; font-style: italic;'>
++      Not Highly Available
++    </div>-->
++
++    <br />
++    <br />
++    <p>
++    Select how much additional storage is needed for Docker containers on each worker node.
++    </p>
++    {{button-selection label='15 GB'
++                       value=15
++                       groupValue=model.openshift_storage_size
++                       changed="storageSizeChanged"}}
++    {{button-selection label='20 GB'
++                       value=20
++                       groupValue=model.openshift_storage_size
++                       changed="storageSizeChanged"}}
++    {{button-selection label='25 GB'
++                       value=25
++                       groupValue=model.openshift_storage_size
++                       changed="storageSizeChanged"}}
++    {{button-selection label='30 GB'
++                       value=30
++                       groupValue=model.openshift_storage_size
++                       changed="storageSizeChanged"}}
++
++    {{#if showEnvironmentSummary}}
++        {{ose-env-summary numNodes=numNodes
++                          numMasterNodes=numMasterNodes
++                          numWorkerNodes=numWorkerNodes
++                          storageSize=storageSize
++                          masterVcpu=masterVcpu
++                          masterRam=masterRam
++                          masterDisk=masterDisk
++                          nodeVcpu=nodeVcpu
++                          nodeRam=nodeRam
++                          nodeDisk=nodeDisk
++                          vcpuNeeded=vcpuNeeded
++                          ramNeeded=ramNeeded
++                          diskNeeded=diskNeeded
++                          vcpuAvailable=vcpuAvailable
++                          ramAvailable=ramAvailable
++                          diskAvailable=diskAvailable
++                          substractCfme=substractCfme
++                          cfmeDisk=cfmeDisk}}
++
++        {{node-details numNodes=model.numNodes
++                       numMasterNodes=numMasterNodes
++                       numWorkerNodes=numWorkerNodes
++                       storageSize=storageSize
++                       masterVcpu=masterVcpu
++                       masterRam=masterRam
++                       masterDisk=masterDisk
++                       nodeVcpu=nodeVcpu
++                       nodeRam=nodeRam
++                       nodeDisk=nodeDisk}}
++    {{/if}}
++
++  </div>
++</div>
++
++{{cancel-back-next backRouteName=backRouteName
++                   disableBack=false
++                   nextRouteName='openshift.openshift-configuration'
++                   disableNext=isInvalidOpenshiftNodes
++                   disableCancel=isStarted
++                   deploymentName=deploymentName}}
+diff --git a/fusor-ember-cli/app/templates/review/installation.hbs b/fusor-ember-cli/app/templates/review/installation.hbs
+index 5e1c5e4..12b363d 100644
+--- a/fusor-ember-cli/app/templates/review/installation.hbs
++++ b/fusor-ember-cli/app/templates/review/installation.hbs
+@@ -160,6 +160,69 @@
+       {{/accordion-item}}
+     {{/if}}
+ 
++    {{#if isOpenShift}}
++      {{#accordion-item name="Openshift Enterprise" isOpen=isOpenshiftOpen}}
++
++        {{review-link label='Nodes Location'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=model.openshift_install_loc}}
++
++        {{review-link label='# of Master Nodes'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=model.openshift_number_master_nodes}}
++
++        {{review-link label='# of Worker Nodes'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=model.openshift_number_worker_nodes}}
++
++        {{review-link label='Docker Storage per Worker'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=storageSizeGB}}
++
++        {{review-link label='vCPU Needed'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=vcpuNeeded}}
++
++        {{review-link label='RAM Needed'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=ramNeededGB}}
++
++        {{review-link label='Disk Needed'
++                      routeName='openshift.openshift-nodes'
++                      isRequired=true
++                      value=diskNeededGB}}
++
++        {{review-link label='Storage Type'
++                      routeName='openshift.openshift-configuration'
++                      isRequired=true
++                      value=model.openshift_storage_type}}
++
++        {{review-link label='Storage Name'
++                      routeName='openshift.openshift-configuration'
++                      isRequired=true
++                      value=model.openshift_storage_name}}
++
++        {{review-link label='Storage Description'
++                      routeName='openshift.openshift-configuration'
++                      value=model.openshift_storage_desc}}
++
++        {{review-link label='Export Path'
++                      routeName='openshift.openshift-configuration'
++                      value=model.openshift_export_path}}
++
++        {{review-link label='Username'
++                      routeName='openshift.openshift-configuration'
++                      value=model.openshift_username}}
++
++      {{/accordion-item}}
++    {{/if}}
++
+     {{#if isCloudForms}}
+       {{#accordion-item name="Cloud Forms Management Engine" isOpen=isCloudFormsOpen}}
+           {{review-link label='Installation Location' routeName='where-install' isRequired=true
+diff --git a/fusor-ember-cli/public/assets/r/Open-shift-enerprise.jpg b/fusor-ember-cli/public/assets/r/Open-shift-enerprise.jpg
+new file mode 100644
+index 0000000..461db5d
+Binary files /dev/null and b/fusor-ember-cli/public/assets/r/Open-shift-enerprise.jpg differ
+diff --git a/fusor-ember-cli/public/assets/r/openshift_logo-300x75.png b/fusor-ember-cli/public/assets/r/openshift_logo-300x75.png
+new file mode 100644
+index 0000000..5901c82
+Binary files /dev/null and b/fusor-ember-cli/public/assets/r/openshift_logo-300x75.png differ
+diff --git a/fusor-ember-cli/public/assets/r/openshift_logo-640x210.png b/fusor-ember-cli/public/assets/r/openshift_logo-640x210.png
+new file mode 100644
+index 0000000..9408456
+Binary files /dev/null and b/fusor-ember-cli/public/assets/r/openshift_logo-640x210.png differ
+diff --git a/fusor-ember-cli/public/assets/r/rhci-openshift-640-400.png b/fusor-ember-cli/public/assets/r/rhci-openshift-640-400.png
+new file mode 100644
+index 0000000..57e2fef
+Binary files /dev/null and b/fusor-ember-cli/public/assets/r/rhci-openshift-640-400.png differ
+diff --git a/fusor-ember-cli/tests/integration/components/button-selection-test.js b/fusor-ember-cli/tests/integration/components/button-selection-test.js
+new file mode 100644
+index 0000000..ccb38ae
+--- /dev/null
++++ b/fusor-ember-cli/tests/integration/components/button-selection-test.js
+@@ -0,0 +1,25 @@
++import { moduleForComponent, test } from 'ember-qunit';
++import hbs from 'htmlbars-inline-precompile';
++
++moduleForComponent('button-selection', 'Integration | Component | button selection', {
++  integration: true
++});
++
++test('it renders', function(assert) {
++  
++  // Set any properties with this.set('myProperty', 'value');
++  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
++
++  this.render(hbs`{{button-selection}}`);
++
++  assert.equal(this.$().text().trim(), '');
++
++  // Template block usage:" + EOL +
++  this.render(hbs`
++    {{#button-selection}}
++      template block text
++    {{/button-selection}}
++  `);
++
++  assert.equal(this.$().text().trim(), 'template block text');
++});
+diff --git a/fusor-ember-cli/tests/integration/components/node-details-block-test.js b/fusor-ember-cli/tests/integration/components/node-details-block-test.js
+new file mode 100644
+index 0000000..060d2cf
+--- /dev/null
++++ b/fusor-ember-cli/tests/integration/components/node-details-block-test.js
+@@ -0,0 +1,25 @@
++import { moduleForComponent, test } from 'ember-qunit';
++import hbs from 'htmlbars-inline-precompile';
++
++moduleForComponent('node-details-block', 'Integration | Component | node details block', {
++  integration: true
++});
++
++test('it renders', function(assert) {
++  
++  // Set any properties with this.set('myProperty', 'value');
++  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
++
++  this.render(hbs`{{node-details-block}}`);
++
++  assert.equal(this.$().text().trim(), '');
++
++  // Template block usage:" + EOL +
++  this.render(hbs`
++    {{#node-details-block}}
++      template block text
++    {{/node-details-block}}
++  `);
++
++  assert.equal(this.$().text().trim(), 'template block text');
++});
+diff --git a/fusor-ember-cli/tests/integration/components/node-details-test.js b/fusor-ember-cli/tests/integration/components/node-details-test.js
+new file mode 100644
+index 0000000..97da15d
+--- /dev/null
++++ b/fusor-ember-cli/tests/integration/components/node-details-test.js
+@@ -0,0 +1,25 @@
++import { moduleForComponent, test } from 'ember-qunit';
++import hbs from 'htmlbars-inline-precompile';
++
++moduleForComponent('node-details', 'Integration | Component | node details', {
++  integration: true
++});
++
++test('it renders', function(assert) {
++  
++  // Set any properties with this.set('myProperty', 'value');
++  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
++
++  this.render(hbs`{{node-details}}`);
++
++  assert.equal(this.$().text().trim(), '');
++
++  // Template block usage:" + EOL +
++  this.render(hbs`
++    {{#node-details}}
++      template block text
++    {{/node-details}}
++  `);
++
++  assert.equal(this.$().text().trim(), 'template block text');
++});
+diff --git a/fusor-ember-cli/tests/integration/components/ose-env-summary-test.js b/fusor-ember-cli/tests/integration/components/ose-env-summary-test.js
+new file mode 100644
+index 0000000..0a5a70d
+--- /dev/null
++++ b/fusor-ember-cli/tests/integration/components/ose-env-summary-test.js
+@@ -0,0 +1,25 @@
++import { moduleForComponent, test } from 'ember-qunit';
++import hbs from 'htmlbars-inline-precompile';
++
++moduleForComponent('ose-env-summary', 'Integration | Component | ose env summary', {
++  integration: true
++});
++
++test('it renders', function(assert) {
++  
++  // Set any properties with this.set('myProperty', 'value');
++  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
++
++  this.render(hbs`{{ose-env-summary}}`);
++
++  assert.equal(this.$().text().trim(), '');
++
++  // Template block usage:" + EOL +
++  this.render(hbs`
++    {{#ose-env-summary}}
++      template block text
++    {{/ose-env-summary}}
++  `);
++
++  assert.equal(this.$().text().trim(), 'template block text');
++});
+diff --git a/fusor-ember-cli/tests/integration/components/ose-node-detail-line-test.js b/fusor-ember-cli/tests/integration/components/ose-node-detail-line-test.js
+new file mode 100644
+index 0000000..461416f
+--- /dev/null
++++ b/fusor-ember-cli/tests/integration/components/ose-node-detail-line-test.js
+@@ -0,0 +1,25 @@
++import { moduleForComponent, test } from 'ember-qunit';
++import hbs from 'htmlbars-inline-precompile';
++
++moduleForComponent('ose-node-detail-line', 'Integration | Component | ose node detail line', {
++  integration: true
++});
++
++test('it renders', function(assert) {
++  
++  // Set any properties with this.set('myProperty', 'value');
++  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
++
++  this.render(hbs`{{ose-node-detail-line}}`);
++
++  assert.equal(this.$().text().trim(), '');
++
++  // Template block usage:" + EOL +
++  this.render(hbs`
++    {{#ose-node-detail-line}}
++      template block text
++    {{/ose-node-detail-line}}
++  `);
++
++  assert.equal(this.$().text().trim(), 'template block text');
++});
+diff --git a/fusor-ember-cli/tests/integration/components/ose-summary-needed-available-test.js b/fusor-ember-cli/tests/integration/components/ose-summary-needed-available-test.js
+new file mode 100644
+index 0000000..0c9c773
+--- /dev/null
++++ b/fusor-ember-cli/tests/integration/components/ose-summary-needed-available-test.js
+@@ -0,0 +1,25 @@
++import { moduleForComponent, test } from 'ember-qunit';
++import hbs from 'htmlbars-inline-precompile';
++
++moduleForComponent('ose-summary-needed-available', 'Integration | Component | ose summary needed available', {
++  integration: true
++});
++
++test('it renders', function(assert) {
++  
++  // Set any properties with this.set('myProperty', 'value');
++  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
++
++  this.render(hbs`{{ose-summary-needed-available}}`);
++
++  assert.equal(this.$().text().trim(), '');
++
++  // Template block usage:" + EOL +
++  this.render(hbs`
++    {{#ose-summary-needed-available}}
++      template block text
++    {{/ose-summary-needed-available}}
++  `);
++
++  assert.equal(this.$().text().trim(), 'template block text');
++});
+diff --git a/fusor-ember-cli/tests/unit/controllers/openshift/openshift-configuration-test.js b/fusor-ember-cli/tests/unit/controllers/openshift/openshift-configuration-test.js
+new file mode 100644
+index 0000000..3faa871
+--- /dev/null
++++ b/fusor-ember-cli/tests/unit/controllers/openshift/openshift-configuration-test.js
+@@ -0,0 +1,12 @@
++import { moduleFor, test } from 'ember-qunit';
++
++moduleFor('controller:openshift/openshift-configuration', {
++  // Specify the other units that are required for this test.
++  // needs: ['controller:foo']
++});
++
++// Replace this with your real tests.
++test('it exists', function(assert) {
++  var controller = this.subject();
++  assert.ok(controller);
++});
+diff --git a/fusor-ember-cli/tests/unit/controllers/openshift/openshift-nodes-test.js b/fusor-ember-cli/tests/unit/controllers/openshift/openshift-nodes-test.js
+new file mode 100644
+index 0000000..38040ec
+--- /dev/null
++++ b/fusor-ember-cli/tests/unit/controllers/openshift/openshift-nodes-test.js
+@@ -0,0 +1,12 @@
++import { moduleFor, test } from 'ember-qunit';
++
++moduleFor('controller:openshift/openshift-nodes', {
++  // Specify the other units that are required for this test.
++  // needs: ['controller:foo']
++});
++
++// Replace this with your real tests.
++test('it exists', function(assert) {
++  var controller = this.subject();
++  assert.ok(controller);
++});
+diff --git a/fusor-ember-cli/tests/unit/mixins/openshift-mixin-test.js b/fusor-ember-cli/tests/unit/mixins/openshift-mixin-test.js
+new file mode 100644
+index 0000000..15506cb
+--- /dev/null
++++ b/fusor-ember-cli/tests/unit/mixins/openshift-mixin-test.js
+@@ -0,0 +1,12 @@
++import Ember from 'ember';
++import OpenshiftMixinMixin from '../../../mixins/openshift-mixin';
++import { module, test } from 'qunit';
++
++module('Unit | Mixin | openshift mixin');
++
++// Replace this with your real tests.
++test('it works', function(assert) {
++  let OpenshiftMixinObject = Ember.Object.extend(OpenshiftMixinMixin);
++  let subject = OpenshiftMixinObject.create();
++  assert.ok(subject);
++});
+diff --git a/fusor-ember-cli/tests/unit/routes/openshift-test.js b/fusor-ember-cli/tests/unit/routes/openshift-test.js
+new file mode 100644
+index 0000000..c7052c5
+--- /dev/null
++++ b/fusor-ember-cli/tests/unit/routes/openshift-test.js
+@@ -0,0 +1,11 @@
++import { moduleFor, test } from 'ember-qunit';
++
++moduleFor('route:openshift', 'Unit | Route | openshift', {
++  // Specify the other units that are required for this test.
++  // needs: ['controller:foo']
++});
++
++test('it exists', function(assert) {
++  var route = this.subject();
++  assert.ok(route);
++});
+diff --git a/fusor-ember-cli/tests/unit/routes/openshift/openshift-configuration-test.js b/fusor-ember-cli/tests/unit/routes/openshift/openshift-configuration-test.js
+new file mode 100644
+index 0000000..65f5066
+--- /dev/null
++++ b/fusor-ember-cli/tests/unit/routes/openshift/openshift-configuration-test.js
+@@ -0,0 +1,11 @@
++import { moduleFor, test } from 'ember-qunit';
++
++moduleFor('route:openshift/openshift-configuration', 'Unit | Route | openshift/openshift configuration', {
++  // Specify the other units that are required for this test.
++  // needs: ['controller:foo']
++});
++
++test('it exists', function(assert) {
++  var route = this.subject();
++  assert.ok(route);
++});
+diff --git a/fusor-ember-cli/tests/unit/routes/openshift/openshift-nodes-test.js b/fusor-ember-cli/tests/unit/routes/openshift/openshift-nodes-test.js
+new file mode 100644
+index 0000000..6a73e92
+--- /dev/null
++++ b/fusor-ember-cli/tests/unit/routes/openshift/openshift-nodes-test.js
+@@ -0,0 +1,11 @@
++import { moduleFor, test } from 'ember-qunit';
++
++moduleFor('route:openshift/openshift-nodes', 'Unit | Route | openshift/openshift nodes', {
++  // Specify the other units that are required for this test.
++  // needs: ['controller:foo']
++});
++
++test('it exists', function(assert) {
++  var route = this.subject();
++  assert.ok(route);
++});
+diff --git a/server/app/models/setting/cloudform.rb b/server/app/models/setting/cloudform.rb
+new file mode 100644
+index 0000000..cd40e3c
+--- /dev/null
++++ b/server/app/models/setting/cloudform.rb
+@@ -0,0 +1,16 @@
++module Fusor
++  class Setting::Cloudform < ::Setting
++
++    def self.load_defaults
++      return unless super
++
++      self.transaction do
++        [
++        ].each { |s| self.create! s.update(:category => "Setting::Cloudforms") }
++
++      end
++      true
++    end
++
++  end
++end
+diff --git a/server/app/models/setting/openshift.rb b/server/app/models/setting/openshift.rb
+new file mode 100644
+index 0000000..3e2ebff
+--- /dev/null
++++ b/server/app/models/setting/openshift.rb
+@@ -0,0 +1,21 @@
++module Fusor
++  class Setting::Openshift < ::Setting
++
++    def self.load_defaults
++      return unless super
++
++      self.transaction do
++        [
++          self.set('openshift_master_vcpu', N_("Number of vCPU's for each OSE Master Node"), 2),
++          self.set('openshift_master_ram', N_("Amount of RAM (GB) for each OSE Master Node"), 8),
++          self.set('openshift_master_disk', N_("Amount of Storage (GB) for each OSE Master Node"), 30),
++          self.set('openshift_node_vcpu', N_("Number of vCPU's for each OSE Worker Node"), 1),
++          self.set('openshift_node_ram', N_("Amount of RAM (GB) for each OSE Worker Node"), 8),
++          self.set('openshift_node_disk', N_("Amount of Storage (GB) for each OSE Worker Node"), 15),
++        ].each { |s| self.create! s.update(:category => "Setting::Openshift") }
++      end
++      true
++    end
++
++  end
++end
+diff --git a/server/app/serializers/fusor/deployment_serializer.rb b/server/app/serializers/fusor/deployment_serializer.rb
+index 89469f7..1eae293 100644
+--- a/server/app/serializers/fusor/deployment_serializer.rb
++++ b/server/app/serializers/fusor/deployment_serializer.rb
+@@ -3,7 +3,7 @@ class DeploymentSerializer < ActiveModel::Serializer
+ 
+     embed :ids, include: true
+     attributes :id, :name, :label, :description,
+-               :deploy_rhev, :deploy_cfme, :deploy_openstack,
++               :deploy_rhev, :deploy_cfme, :deploy_openstack, :deploy_openshift,
+                :rhev_engine_admin_password,
+                :rhev_database_name, :rhev_cluster_name, :rhev_storage_name,
+                :rhev_storage_type, :rhev_storage_address, :rhev_cpu_type, :rhev_share_path,
+@@ -31,8 +31,33 @@ class DeploymentSerializer < ActiveModel::Serializer
+                :cfme_hostname,
+                :is_disconnected,
+                :cdn_url, :manifest_file,
++               :openshift_install_loc,
++               :openshift_number_nodes,
++               :openshift_storage_size,
++               :openshift_username,
++               :openshift_master_vcpu,
++               :openshift_master_ram,
++               :openshift_master_disk,
++               :openshift_node_vcpu,
++               :openshift_node_ram,
++               :openshift_node_disk,
++               :openshift_available_vcpu,
++               :openshift_available_ram,
++               :openshift_available_disk,
++               :openshift_number_master_nodes,
++               :openshift_number_worker_nodes,
++               :openshift_storage_type,
++               :openshift_storage_name,
++               :openshift_storage_desc,
++               :openshift_export_path,
++               :openshift_username,
++               :cloudforms_vcpu,
++               :cloudforms_ram,
++               :cloudforms_vm_disk_size,
++               :cloudforms_db_disk_size,
+                :created_at, :updated_at
+ 
++
+     has_one :organization, serializer: ::OrganizationSerializer
+     has_one :lifecycle_environment, serializer: ::LifecycleEnvironmentSerializer
+     # has one engine
+diff --git a/server/db/migrate/20160204161230_add_deploy_openshift.rb b/server/db/migrate/20160204161230_add_deploy_openshift.rb
+new file mode 100644
+index 0000000..b51a403
+--- /dev/null
++++ b/server/db/migrate/20160204161230_add_deploy_openshift.rb
+@@ -0,0 +1,10 @@
++class AddDeployOpenshift < ActiveRecord::Migration
++  def change
++
++    add_column :fusor_deployments, :deploy_openshift, :boolean, :default => false
++    add_column :fusor_deployments, :openshift_install_loc, :string
++    add_column :fusor_deployments, :openshift_storage_size, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_username, :string
++
++  end
++end
+diff --git a/server/db/migrate/20160217141452_add_openshift_fields.rb b/server/db/migrate/20160217141452_add_openshift_fields.rb
+new file mode 100644
+index 0000000..953664b
+--- /dev/null
++++ b/server/db/migrate/20160217141452_add_openshift_fields.rb
+@@ -0,0 +1,23 @@
++class AddOpenshiftFields < ActiveRecord::Migration
++  def change
++    add_column :fusor_deployments, :openshift_master_vcpu, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_master_ram, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_master_disk, :integer, :default => 0
++
++    add_column :fusor_deployments, :openshift_node_vcpu, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_node_ram, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_node_disk, :integer, :default => 0
++
++    add_column :fusor_deployments, :openshift_available_vcpu, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_available_ram, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_available_disk, :integer, :default => 0
++
++    add_column :fusor_deployments, :openshift_number_master_nodes, :integer, :default => 0
++    add_column :fusor_deployments, :openshift_number_worker_nodes, :integer, :default => 0
++
++    add_column :fusor_deployments, :openshift_storage_type, :string
++    add_column :fusor_deployments, :openshift_storage_name, :string
++    add_column :fusor_deployments, :openshift_storage_desc, :string
++    add_column :fusor_deployments, :openshift_export_path, :string
++  end
++end
+diff --git a/server/db/migrate/20160225164237_add_cfme_fields.rb b/server/db/migrate/20160225164237_add_cfme_fields.rb
+new file mode 100644
+index 0000000..31cd826
+--- /dev/null
++++ b/server/db/migrate/20160225164237_add_cfme_fields.rb
+@@ -0,0 +1,8 @@
++class AddCfmeFields < ActiveRecord::Migration
++  def change
++    add_column :fusor_deployments, :cloudforms_vcpu, :integer, :default => 0
++    add_column :fusor_deployments, :cloudforms_ram, :integer, :default => 0
++    add_column :fusor_deployments, :cloudforms_vm_disk_size, :integer, :default => 0
++    add_column :fusor_deployments, :cloudforms_db_disk_size, :integer, :default => 0
++  end
++end
+diff --git a/server/lib/fusor/engine.rb b/server/lib/fusor/engine.rb
+index 4919264..3dc3462 100755
+--- a/server/lib/fusor/engine.rb
++++ b/server/lib/fusor/engine.rb
+@@ -32,6 +32,13 @@ class Engine < ::Rails::Engine
+       app.routes_reloader.paths << "#{Fusor::Engine.root}/config/routes/mount_engine.rb"
+     end
+ 
++    # Load this before the Foreman config initializers, so that the Setting.descendants
++    # list includes the plugin STI setting class
++    initializer 'fusor.load_default_settings', :before => :load_config_initializers do |app|
++      require_dependency File.expand_path("#{Fusor::Engine.root}/app/models/setting/openshift.rb", __FILE__) if (Setting.table_exists? rescue(false))
++      #require_dependency File.expand_path("#{Fusor::Engine.root}/app/models/setting/cloudforms.rb", __FILE__) if (Setting.table_exists? rescue(false))
++    end
++
+     initializer "fusor.paths" do |app|
+       app.routes_reloader.paths << "#{Fusor::Engine.root}/config/routes/api/v2.rb"
+       app.routes_reloader.paths << "#{Fusor::Engine.root}/config/routes/api/v21.rb"
