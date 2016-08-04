@@ -21,8 +21,12 @@ export default Ember.Component.extend({
     }
   }),
 
-  envCssId: Ember.computed('env', function () {
-    return ('env_' + this.get('env.id'));
+  subCssId: Ember.computed('subscription', function () {
+    return ('sub_checkbox_' + this.get('subscription.id'));
+  }),
+
+  attachCssId: Ember.computed('subscription', function () {
+    return ('qty_attach_' + this.get('subscription.id'));
   }),
 
   isQtyValid: Ember.computed('subscription.qtyAvailable', 'subscription.qtyToAttach', function() {
@@ -75,7 +79,6 @@ export default Ember.Component.extend({
       if (this.get('isQtyInValid')) {
         this.set('subscription.qtyToAttach', this.get('subscription.qtyAvailable') );
       }
-      // TODO - call saveSubscription action from within this action
       var pool = this.get('subscription');
       this.sendAction('saveSubscription', pool, this.get('subscription.qtyToAttach'));
     }

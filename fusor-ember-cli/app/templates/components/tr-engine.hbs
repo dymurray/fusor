@@ -1,11 +1,11 @@
 <td>
-  {{radio-button value=host groupValue=selectedRhevEngineHost changed="engineHostChanged" id=cssIdHostId disabled=disabled}}
+  {{radio-button value=host groupValue=selectedRhevEngineHost changed="engineHostChanged" id=cssIdHostId dataQci=cssIdHostId disabled=disabled}}
 </td>
 <td class="{{if isSelectedAsEngine 'white-font' 'not-selected'}}">
     {{#if isSelectedAsEngine}}
       {{partial 'rhev-hostname-input'}}
     {{else}}
-      Not Selected
+      {{host.name}}
     {{/if}}
 </td>
 <td> {{host.mac}} </td>

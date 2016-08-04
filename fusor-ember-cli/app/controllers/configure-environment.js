@@ -31,26 +31,29 @@ export default Ember.Controller.extend(ConfigureEnvironmentMixin, NeedsDeploymen
 
   deployment: Ember.computed.alias("deploymentController.model"),
 
-  envNameValidator: AllValidator.create({
-    validators: [
-      PresenceValidator.create({}),
-      AlphaNumericDashUnderscoreValidator.create({})
-    ]
-  }),
+  envNameValidator: PresenceValidator.create({}),
 
   actions: {
     selectEnvironment(environment) {
       this.set('showAlertMessage', false);
       this.set('selectedEnvironment', environment);
       this.get('deploymentController.model').set('lifecycle_environment', environment);
+      this.get('deploymentController').set('errorMsg', null);
+      this.set('errorMsg', null);
     },
 
     createEnvironment(fields_env) {
       var self = this;
+      this.set('showAlertMessage', false);
+      this.set('errorMsg', null);
+      this.get('deploymentController').set('errorMsg', null);
 
-      var nameAlreadyExists =  self.get('lifecycleEnvironments').findBy('name', fields_env.name);
+      var nameAlreadyExists =  this.get('lifecycleEnvironments').findBy('name', fields_env.name);
       if (nameAlreadyExists) {
-        self.get('deploymentController').set('errorMsg', fields_env.name + ' is not a unique name. Environment not saved.');
+        let errorMsg = fields_env.name + ' is not a unique name. Environment not saved.';
+        this.get('deploymentController').set('errorMsg', errorMsg);
+        this.set('errorMsg', errorMsg);
+        return false; // return and don't continue
       }
 
       var selectedOrganization = this.get('selectedOrganization');
@@ -67,9 +70,12 @@ export default Ember.Controller.extend(ConfigureEnvironmentMixin, NeedsDeploymen
         self.set('selectedEnvironment', environment);
         self.get('deploymentController.model').set('lifecycle_environment', environment);
         self.get('deploymentController').set('errorMsg', null);
+        self.set('errorMsg', null);
         self.set('showAlertMessage', true);
       }, function(error) {
-        self.get('deploymentController').set('errorMsg', 'error saving environment' + error);
+        let errorMsg = 'error saving environment' + error;
+        self.get('deploymentController').set('errorMsg', errorMsg);
+        self.set('errorMsg', errorMsg);
       });
 
     }

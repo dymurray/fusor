@@ -42,8 +42,9 @@ module Actions
             ::Fusor.log.info 'CFME Launch Completed'
           end
 
-          def cfme_launch_failed
-            fail _('CFME Launch failed')
+          def cfme_launch_failed(errors)
+            ::Fusor.log.info errors.full_messages.to_s
+            fail _("CFME Launch failed with error #{errors.full_messages}")
           end
 
           private
@@ -62,7 +63,7 @@ module Actions
                                        "cluster" => cl_id,
                                        "template" => template_id,
                                        "cores" => 4,
-                                       "memory" => 6_442_450_944,
+                                       "memory" => 8_589_934_592,
                                        "interfaces_attributes" => {
                                          "new_interfaces" => {
                                            "name" => "",
@@ -162,7 +163,7 @@ module Actions
               cfme_launch_completed
               return host
             else
-              cfme_launch_failed
+              cfme_launch_failed host.errors
             end
           end
 

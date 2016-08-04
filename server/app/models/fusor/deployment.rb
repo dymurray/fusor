@@ -16,7 +16,7 @@ module Fusor
     # on update because we don't want to validate the empty object when
     # it is first created
     validates_with Fusor::Validators::DeploymentValidator, on: :update
-    validates_associated :openstack_deployment
+    validates_associated :openstack_deployment, on: :update
 
     belongs_to :organization
     belongs_to :lifecycle_environment, :class_name => "Katello::KTEnvironment"
@@ -33,7 +33,7 @@ module Fusor
 
     belongs_to :rhev_engine_host, :class_name => "::Host::Base", :foreign_key => :rhev_engine_host_id
     # if we want to envorce discovered host uniqueness uncomment this line
-    #validates :rhev_engine_host_id, uniqueness: { :message => _('This Host is already a RHEV Engine for a different deployment') }
+    #validates :rhev_engine_host_id, uniqueness: { :message => _('This Host is already an RHV Engine for a different deployment') }
     has_many :rhev_hypervisor_hosts, :class_name => "::Host::Base", :through => :deployment_hypervisor_hosts, :source => :discovered_host
     validates_with ::Katello::Validators::KatelloNameFormatValidator, :attributes => :name
 
@@ -48,7 +48,7 @@ module Fusor
     alias_attribute :discovered_host_id, :rhev_engine_host_id
     attr_accessor :foreman_task_id
 
-    has_many :subscriptions, :class_name => "Fusor::Subscription", :foreign_key => :deployment_id
+    has_many :subscriptions, :class_name => "Fusor::Subscription", :foreign_key => :deployment_id, dependent: :destroy
     has_many :introspection_tasks, :class_name => 'Fusor::IntrospectionTask'
 
     belongs_to :foreman_task, :class_name => "::ForemanTasks::Task", :foreign_key => :foreman_task_uuid
@@ -57,7 +57,10 @@ module Fusor
     before_validation :update_label, :ensure_openstack_deployment, on: :create  # we validate on create, so we need to do it before those validations
     before_save :update_label, :ensure_openstack_deployment, on: :update        # but we don't validate on update, so we need to call before_save
 
-    scoped_search :on => [:id, :name], :complete_value => true
+    scoped_search :on => [:id, :name, :updated_at], :complete_value => true
+    scoped_search :in => :organization, :on => :name, :rename => :organization
+    scoped_search :in => :lifecycle_environment, :on => :name, :rename => :lifecycle_environment
+    scoped_search :in => :foreman_task, :on => :state, :rename => :status
 
     # used by ember-data for .find('model', {id: [1,2,3]})
     scope :by_id, proc { |n| where(:id => n) if n.present? }
@@ -87,7 +90,7 @@ module Fusor
 
     def ensure_openstack_deployment
       if deploy_openstack?
-        self.openstack_deployment ||= Fusor::OpenstackDeployment.new
+        self.openstack_deployment ||= Fusor::OpenstackDeployment.create
       else
         self.openstack_deployment.destroy if openstack_deployment
       end

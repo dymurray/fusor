@@ -25,7 +25,7 @@ module Actions
             sequence do
               if deployment.rhev_is_self_hosted
                 # Self-hosted RHEV
-                fail _("Unable to locate a RHEV Hypervisor Host") unless (deployment.discovered_hosts.count > 0)
+                fail _("Unable to locate an RHV Hypervisor Host") unless (deployment.discovered_hosts.count > 0)
 
                 first_host = deployment.discovered_hosts[0]
                 additional_hosts = deployment.discovered_hosts[1..-1]
@@ -35,6 +35,7 @@ module Actions
                             deployment,
                             "RHEV-Self-hosted",
                             first_host)
+
                 plan_action(::Actions::Fusor::Host::WaitUntilProvisioned,
                             first_host.id, true)
 
@@ -62,7 +63,7 @@ module Actions
               else
                 # Hypervisor + Engine separate
 
-                fail _("Unable to locate a RHEV Engine Host") unless deployment.rhev_engine_host
+                fail _("Unable to locate an RHV Engine Host") unless deployment.rhev_engine_host
 
                 deployment.discovered_hosts.each do |host|
                   plan_action(::Actions::Fusor::Host::TriggerProvisioning,
@@ -74,7 +75,7 @@ module Actions
                 concurrence do
                   deployment.discovered_hosts.each do |host|
                     plan_action(::Actions::Fusor::Host::WaitUntilProvisioned,
-                                host.id)
+                                host.id, true)
                   end
                 end
                 plan_action(::Actions::Fusor::Host::TriggerProvisioning,
@@ -82,8 +83,9 @@ module Actions
                             "RHEV-Engine",
                             deployment.rhev_engine_host)
 
+
                 plan_action(::Actions::Fusor::Host::WaitUntilProvisioned,
-                            deployment.rhev_engine_host.id)
+                            deployment.rhev_engine_host.id, true)
 
               end
               plan_action(::Actions::Fusor::Deployment::Rhev::WaitForDataCenter,

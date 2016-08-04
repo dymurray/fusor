@@ -28,6 +28,9 @@ export default Ember.Route.extend(UsesOseDefaults, {
     controller.set('model', model.deployment);
     controller._initWorkerNodes(5);
 
+    // TODO: Disabling provider selection until OpenStack is supported post-GA
+    deployment.set('openshift_install_loc', 'RHEV');
+
     // Set max resources to smart values
     deployment.set('openshift_available_vcpu', maxRes.get('vcpuAvailable'));
     deployment.set('openshift_available_ram', maxRes.get('ramAvailable'));
@@ -47,12 +50,14 @@ export default Ember.Route.extend(UsesOseDefaults, {
       deployment.set('openshift_install_loc', 'OpenStack');
     }
 
-    var result = { vcpuAvailabe: 8,
-                   ramAvailable: 32,
-                   diskAvailable: 250 };
+    var result = {
+      vcpuAvailable: 8,
+      ramAvailable: 32,
+      diskAvailable: 250
+    };
 
     if (this.shouldUseOseDefault(deployment.get('openshift_available_vcpu'))) {
-      deployment.set('openshift_available_vcpu', result['vcpuAvailabe']);
+      deployment.set('openshift_available_vcpu', result['vcpuAvailable']);
     }
     if (this.shouldUseOseDefault(deployment.get('openshift_available_ram'))) {
       deployment.set('openshift_available_ram', result['ramAvailable']);
@@ -87,10 +92,16 @@ export default Ember.Route.extend(UsesOseDefaults, {
       .then(hash => {
         // Calculate aggregates
         const hvs = hash.hvs;
-        const cpus = hvs.reduce((accum, hv) => accum + hv.get('cpus'), 0);
+
+        const cpus = hvs.reduce((accum, hv) => {
+          const cpu = hv.get('cpus') || 0;
+          return accum + cpu;
+        }, 0);
+
         const ram = Humanize.rawToHuman(
           hvs.reduce((accum, hv) => {
-            return accum + Humanize.humanToRaw(hv.get('memory_human_size'));
+            const mem = hv.get('memory_human_size') || '0 B';
+            return accum + Humanize.humanToRaw(mem);
           }, 0),
           {output: 'object'}
         ).value;

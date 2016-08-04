@@ -113,7 +113,7 @@ ul.req-list > li {
   font-size: 18px;
 }
 
-.next-start {
+.rhci-start-block .cancel-back-next-container {
   float: right;
   margin-top: 30px;
 }
@@ -218,6 +218,11 @@ p.error.errorForValidation {
 
 .errorForValidation a {
   color: #a94442;
+}
+
+.alert {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .validation-alert-icon {
@@ -594,7 +599,7 @@ table.fusor-table {
 
 .new-deployment-button {
   float: right;
-  margin-top: -33px;
+  margin-top: 24px;
 }
 
 .filter-deployments {
@@ -881,12 +886,15 @@ span.hanging-indent{
   width: 100%;
 }
 
-.cancel-button {
-  margin-right: 10px;
-}
+.rhci-steps-buttons {
+  .btn.back-button {
+    margin-left: 15px;
+    margin-right: 0;
+  }
 
-.next-button {
-  margin-left: -5px !important;
+  .btn.next-button {
+    margin-left: 0;
+  }
 }
 
 .edit-deployment {
@@ -939,4 +947,35 @@ span.hanging-indent{
   display: inline-block;
   vertical-align: top;
   margin-bottom: 0px !important; /* overides form-group default */
+}
+
+.deployments-table {
+  table-layout:fixed;
+  width: 100%;
+}
+.deployments-table>thead:first-child>tr:first-child>th:first-child
+{
+    width: 40%;
+}
+.deployments-table> tbody > tr > td:first-child {
+    width: 40%;
+}
+
+.pagination {
+  display: table-cell;
+  vertical-align: bottom;
+  float: none;
+}
+
+.darkgrey, .darkgray {
+  color: #606060 !important;
+}
+
+.displaying-entries {
+  margin-left: -20px;
+}
+
+.rhci-title {
+  display: inline-block;
+  padding: 0px 8px 8px 0px;
 }

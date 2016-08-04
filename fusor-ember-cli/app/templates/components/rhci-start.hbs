@@ -43,17 +43,16 @@
   </div>
 
   <div class='download-reqs'>
-    <a download href="/assets/r/QCI_Requirements.txt" target="_blank">
+    <a download href="/fusor_ui/files/QCI_Requirements.txt" target="_blank" data-qci='download-reqs'>
       <span class="pficon pficon-save"></span>
       Download these requirements
     </a>
   </div>
 
-  <div class='next-start'>
-    {{#link-to 'deployments' class="btn btn-default"}}Cancel{{/link-to}}
-    {{#link-to satelliteTabRouteName class="btn btn-primary" disabled=disableNextOnStart}}
-      Next &nbsp; <i class="fa fa-angle-right"></i> &nbsp;
-    {{/link-to}}
-  </div>
-
+  {{cancel-back-next  nextRouteName=satelliteTabRouteName
+                      disableNext=disableNextOnStart
+                      disableCancel=isStarted
+                      deploymentName=deploymentName
+                      isNew=isNew
+                      bottomBar=false}}
 </div>

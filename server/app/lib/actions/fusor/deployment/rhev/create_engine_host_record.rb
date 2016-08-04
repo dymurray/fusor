@@ -62,6 +62,12 @@ module Actions
           end
 
           def create_host(deployment, mac_addr)
+            # TODO(fabianvf): Temporary fix while we figure out why this keeps flipping
+            # Feel free to yell at fabian if this is still here when we hit GA
+            redhat = Operatingsystem.find_by_title('RedHat 7.2')
+            rhel_server = Operatingsystem.find_by_title('RHEL Server 7.2')
+            os = redhat.nil? ? rhel_server : redhat
+
             rhevm = {"name" => "#{deployment.label.tr('_', '-')}-rhev-engine",
                      "location_id" => Location.find_by_name('Default Location').id,
                      "environment_id" => Environment.where(:katello_id => "Default_Organization/Library/Fusor_Puppet_Content").first.id,
@@ -70,7 +76,7 @@ module Actions
                      "enabled" => "1",
                      "managed" => "1",
                      "architecture_id" => Architecture.find_by_name('x86_64')['id'],
-                     "operatingsystem_id" => Operatingsystem.find_by_title('RedHat 6.7')['id'],
+                     "operatingsystem_id" => os['id'],
                      "ptable_id" => Ptable.find { |p| p["name"] == "Kickstart default" }.id,
                      "domain_id" => 1,
                      "root_pass" => deployment.rhev_root_password,
@@ -79,10 +85,10 @@ module Actions
             host = ::Host.create(rhevm)
 
             if host.errors.empty?
-              ::Fusor.log.info 'RHEV Engine Host Record Created'
+              ::Fusor.log.info 'RHV Engine Host Record Created'
               return host
             else
-              fail _("RHEV Engine Host Record creation with mac #{mac_addr} failed with errors: #{host.errors.messages}")
+              fail _("RHV Engine Host Record creation with mac #{mac_addr} failed with errors: #{host.errors.messages}")
             end
           end
 

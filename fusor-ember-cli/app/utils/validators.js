@@ -280,14 +280,22 @@ const IpSubnetValidator = Validator.extend({
     }
 
     if (!this.isValidSubnet()) {
-      return ['This is an invalid subnet.'];
+      return ['The associated subnet is invalid.'];
     }
 
     if (!this.isValid(value)) {
-      return [`must belong to subnet ${subnet}`];
+      return [`This must belong to subnet ${subnet}.`];
     }
 
     return [];
+  }
+});
+
+const NoSpacesValidator = Validator.extend({
+  message: 'This field must not have spaces.',
+  isValid(value) {
+    let spaceRegex = /\s/;
+    return !spaceRegex.test(value);
   }
 });
 
@@ -333,14 +341,16 @@ const NoLeadingSlashValidator = Validator.extend({
 const NfsPathValidator = AllValidator.extend({
   validators: [
     LeadingSlashValidator.create({}),
-    NoTrailingSlashValidator.create({})
+    NoTrailingSlashValidator.create({}),
+    NoSpacesValidator.create({})
   ]
 });
 
 const GlusterPathValidator = AllValidator.extend({
   validators: [
     NoLeadingSlashValidator.create({}),
-    NoTrailingSlashValidator.create({})
+    NoTrailingSlashValidator.create({}),
+    NoSpacesValidator.create({})
   ]
 });
 

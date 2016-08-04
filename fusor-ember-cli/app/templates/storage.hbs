@@ -30,12 +30,6 @@
       </span>
     {{/radio-button}}
     &nbsp;&nbsp;&nbsp;&nbsp;
-    {{#radio-button value="Local" groupValue=model.rhev_storage_type id='local' disabled=true}}
-      <span class="disabled">
-        Local
-      </span>
-    {{/radio-button}}
-    &nbsp;&nbsp;&nbsp;&nbsp;
     {{#radio-button value="glusterfs" groupValue=model.rhev_storage_type id='gluster' disabled=deploymentController.isStarted}}
       <span class="{{if deploymentController.isStarted 'disabled'}}">
         Gluster
@@ -58,7 +52,7 @@
     {{/if}}
 
     {{#if rhevIsSelfHosted}}
-      <h4> Self-hosted RHEV Engine Storage Domain </h4>
+      <h4> Self-hosted RHV Engine Storage Domain </h4>
         {{text-f label="Hosted Engine Storage Domain Name" value=model.hosted_storage_name cssId='hosted_storage_name' isRequired=true disabled=deploymentController.isStarted validator=computerNameValidator}}
         {{text-f label="Storage Address" value=model.hosted_storage_address cssId='hosted_storage_address' isRequired=true disabled=deploymentController.isStarted validator=hostnameValidator}}
         {{text-f label="Share Path" value=model.hosted_storage_path cssId='hosted_storage_path' isRequired=true disabled=deploymentController.isStarted validator=sharePathValidator}}

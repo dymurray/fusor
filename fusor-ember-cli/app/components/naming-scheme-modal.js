@@ -2,6 +2,13 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
 
+  onOpenModal: Ember.observer('openModal', function() {
+    if (this.get('openModal')) {
+      let customPreprendName = this.get('customPreprendName');
+      this.set('origCustomPreprendName', customPreprendName);
+    }
+  }),
+
   isFreeform: Ember.computed('hostNamingScheme', function() {
     return (this.get('hostNamingScheme') === 'Freeform');
   }),
@@ -26,6 +33,11 @@ export default Ember.Component.extend({
     }
   }),
 
+  customPreprendNameTrimmed: Ember.computed('customPreprendName', function() {
+    let name = this.get('customPreprendName');
+    return name ? name.trim() : name;
+  }),
+
   actions: {
     saveNamingScheme() {
       this.set('openModal', false);
@@ -34,6 +46,8 @@ export default Ember.Component.extend({
 
     cancelNamingScheme() {
       this.set('openModal', false);
+      this.set('customPreprendName', this.get('origCustomPreprendName'));
+      this.set('origCustomPreprendName', null);
       this.sendAction('cancelNamingScheme');
     },
     setSelectValue(fieldName, selectionValue) {

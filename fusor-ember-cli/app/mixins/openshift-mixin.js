@@ -51,6 +51,42 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
   workerDisk: Ember.computed.alias("deployment.openshift_node_disk"),
   cfmeDisk: Ember.computed.alias("deployment.cfmeDisk"),
 
+  totalMasterCpus: Ember.computed('numMasterNodes', 'masterVcpu', function() {
+    return this.get('numMasterNodes') * this.get('masterVcpu');
+  }),
+
+  totalWorkerCpus: Ember.computed('numWorkerNodes', 'workerVcpu', function() {
+    return this.get('numWorkerNodes') * this.get('workerVcpu');
+  }),
+
+  totalMasterRam: Ember.computed('numMasterNodes', 'masterRam', function() {
+    return this.get('numMasterNodes') * this.get('masterRam');
+  }),
+
+  totalWorkerRam: Ember.computed('numWorkerNodes', 'workerRam', function() {
+    return this.get('numWorkerNodes') * this.get('workerRam');
+  }),
+
+  totalMasterDisk: Ember.computed('numMasterNodes', 'masterDisk', function() {
+    return this.get('numMasterNodes') * this.get('masterDisk');
+  }),
+
+  totalWorkerDisk: Ember.computed('numWorkerNodes', 'workerDisk', function() {
+    return this.get('numWorkerNodes') * this.get('workerDisk');
+  }),
+
+  totalWorkerStorage: Ember.computed('numWorkerNodes', 'storageSize', function() {
+    return this.get('numWorkerNodes') * this.get('storageSize');
+  }),
+
+  totalWorkerDiskPlusStorage: Ember.computed(
+    'totalWorkerDisk',
+    'totalWorkerStorage',
+    function() {
+      return this.get('totalWorkerDisk') + this.get('totalWorkerStorage');
+    }
+  ),
+
   ignoreCfme: Ember.computed(
     "isCloudForms",
     "isRhev",
@@ -69,7 +105,8 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
   substractCfme: Ember.computed.not('ignoreCfme'),
 
   diskAvailableMinusCfme: Ember.computed("deployment.openshift_available_disk", "cfmeDisk", function() {
-    return this.get("deployment.openshift_available_disk") - this.get("cfmeDisk");
+    const rawDisk = this.get("deployment.openshift_available_disk") - this.get("cfmeDisk");
+    return Math.floor(rawDisk * 100) / 100;
   }),
 
   diskAvailable: Ember.computed(
@@ -87,7 +124,7 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
 
   ramAvailableMinusCfme: Ember.computed("deployment.openshift_available_ram", "deployment.cloudforms_ram", function() {
     const rawVal = this.get("deployment.openshift_available_ram") - this.get("deployment.cloudforms_ram");
-    return Math.round(rawVal * 100) / 100; // Make sure to truncate since we can get some weird fp nums
+    return Math.floor(rawVal * 100) / 100; // Make sure to truncate since we can get some weird fp nums
   }),
 
   ramAvailable: Ember.computed(
@@ -104,7 +141,9 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
   ),
 
   vcpuAvailableMinusCfme: Ember.computed("deployment.openshift_available_vcpu", "deployment.cloudforms_vcpu", function() {
-    return this.get("deployment.openshift_available_vcpu") - this.get("deployment.cloudforms_vcpu");
+    const cpuLessCfme = this.get("deployment.openshift_available_vcpu") - this.get("deployment.cloudforms_vcpu");
+    // Clamp to zero
+    return Math.max(cpuLessCfme, 0);
   }),
 
   vcpuAvailable: Ember.computed(
@@ -120,36 +159,60 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
     }
   ),
 
-  vcpuNeeded: Ember.computed('numMasterNodes', 'numWorkerNodes', 'masterVcpu', 'workerVcpu', function() {
-    if ((this.get('numMasterNodes') > 0) && (this.get('masterVcpu') > 0) &&
-        (this.get('numWorkerNodes') >= 0) && (this.get('workerVcpu') > 0) ) {
-      return ((this.get('numMasterNodes') * this.get('masterVcpu')) +
-              (this.get('numWorkerNodes') * this.get('workerVcpu')));
-    } else {
-      return 0;
+  vcpuNeeded: Ember.computed(
+    'numMasterNodes',
+    'numWorkerNodes',
+    'masterVcpu',
+    'workerVcpu',
+    'totalMasterCpus',
+    'totalWorkerCpus',
+    function() {
+      if ((this.get('numMasterNodes') > 0) && (this.get('masterVcpu') > 0) &&
+          (this.get('numWorkerNodes') >= 0) && (this.get('workerVcpu') > 0) ) {
+        return this.get('totalMasterCpus') + this.get('totalWorkerCpus');
+      } else {
+        return 0;
+      }
     }
-  }),
+  ),
 
-  ramNeeded: Ember.computed('numMasterNodes', 'numWorkerNodes', 'masterRam', 'workerRam', function() {
-    if ((this.get('numMasterNodes') > 0) && (this.get('masterRam') > 0) &&
-        (this.get('numWorkerNodes') >= 0) && (this.get('workerRam') > 0) ) {
-      return ((this.get('numMasterNodes') * this.get('masterRam')) +
-               (this.get('numWorkerNodes') * this.get('workerRam')));
-    } else {
-      return 0;
+  ramNeeded: Ember.computed(
+    'numMasterNodes',
+    'numWorkerNodes',
+    'masterRam',
+    'workerRam',
+    'totalMasterRam',
+    'totalWorkerRam',
+    function() {
+      if ((this.get('numMasterNodes') > 0) && (this.get('masterRam') > 0) &&
+          (this.get('numWorkerNodes') >= 0) && (this.get('workerRam') > 0) ) {
+        return this.get('totalMasterRam') + this.get('totalWorkerRam');
+      } else {
+        return 0;
+      }
     }
-  }),
+  ),
 
-  diskNeeded: Ember.computed('numMasterNodes', 'numWorkerNodes', 'masterDisk', 'workerDisk', 'storageSize', function() {
-    if ((this.get('numMasterNodes') > 0) && (this.get('masterDisk') > 0) &&
-        (this.get('numWorkerNodes') >= 0) && (this.get('workerDisk') > 0) && (this.get('storageSize') > 0)) {
-      return ((this.get('numMasterNodes') * this.get('masterDisk')) +
-              (this.get('numWorkerNodes') * this.get('workerDisk')) +
-              (this.get('numWorkerNodes') * this.get('storageSize')));
-    } else {
-      return 0;
+  diskNeeded: Ember.computed(
+    'numMasterNodes',
+    'masterDisk',
+    'numWorkerNodes',
+    'workerDisk',
+    'storageSize',
+    'totalMasterDisk',
+    'totalWorkerDiskPlusStorage',
+    function() {
+      const hasMasterDisk = this.get('numMasterNodes') > 0 && this.get('masterDisk') > 0;
+      const hasWorkerDiskPlusStorage =
+        this.get('numWorkerNodes') >= 0 &&
+        this.get('workerDisk') > 0 &&
+        this.get('storageSize') > 0;
+      const shouldPerformDiskCalc = hasMasterDisk && hasWorkerDiskPlusStorage;
+
+      return shouldPerformDiskCalc ?
+        this.get('totalMasterDisk') + this.get('totalWorkerDiskPlusStorage') : 0;
     }
-  }),
+  ),
 
   isOverCapacityVcpu: Ember.computed('vcpuNeeded','vcpuAvailable', function() {
     return (this.get('vcpuNeeded') > this.get('vcpuAvailable'));
@@ -164,7 +227,7 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
   errorTypes: Ember.computed('isOverCapacityVcpu','isOverCapacityRam', 'isOverCapacityDisk', function() {
     let errorTypes = [];
     if (this.get('isOverCapacityVcpu')) {
-      errorTypes.push('vCPU');
+      errorTypes.push('CPU');
     }
     if (this.get('isOverCapacityRam')) {
       errorTypes.push('RAM');
@@ -179,9 +242,16 @@ export default Ember.Mixin.create(NeedsDeploymentMixin, {
     return (this.get('isOverCapacityVcpu') || this.get('isOverCapacityRam') || this.get('isOverCapacityDisk'));
   }),
 
-  errorMsg: Ember.computed('isError', 'errorTypes', function() {
-    if (this.get('isError')) {
-      return `${this.get('errorTypes')} is overcommitted. Consider lowering node counts or ${this.get('errorTypes')} sizes.`;
+  cfmeTooltipError: Ember.computed(
+    'cfmeVcpu',
+    'cfmeRam',
+    'cfmeDisk',
+    function() {
+      return Ember.Object.create({
+        cpu: `CloudForms has ${this.get('cfmeVcpu')} reserved cpus`,
+        ram: `CloudForms has reserved ${this.get('cfmeRam')} GB of RAM`,
+        disk: `CloudForms has reserved ${this.get('cfmeDisk')} GB of disk`
+      });
     }
-  })
+  )
 });

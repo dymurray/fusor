@@ -6,7 +6,7 @@ class DeploymentTest < ActiveSupport::TestCase
   describe "deployment" do
     before do
       # skip nfs mount validation as it calls commands from the command line
-      Fusor::Validators::DeploymentValidator.any_instance.stubs(:validate_nfs_share)
+      Fusor::Validators::DeploymentValidator.any_instance.stubs(:validate_storage_share)
     end
 
     test "should not save without name" do
@@ -47,6 +47,31 @@ class DeploymentTest < ActiveSupport::TestCase
       rhev_d = fusor_deployments(:rhev)
       rhev_d.organization_id = nil
       assert_not rhev_d.save, "Saved with no organization"
+    end
+
+    describe "single deployment" do
+      test "should validate deployment when no other deployment is running" do
+        deployment = fusor_deployments(:rhev)
+        assert deployment.valid?, 'Validation error for single deployment'
+        assert_empty deployment.errors[:foreman_task_uuid]
+      end
+
+      test "should validate deployment when other deployments are complete" do
+        deployment = fusor_deployments(:rhev)
+        another_deployment = fusor_deployments(:another_rhev)
+        another_deployment.foreman_task = foreman_tasks_tasks(:successful_deployment_task)
+        assert deployment.valid?, 'Validation error for subsequent deployments'
+        assert_empty deployment.errors[:foreman_task_uuid]
+      end
+
+      test "should not validate deployment when another deployment is running" do
+        deployment = fusor_deployments(:rhev)
+        another_deployment = fusor_deployments(:another_rhev)
+        another_deployment.foreman_task = foreman_tasks_tasks(:running_deployment_task)
+        another_deployment.save
+        assert_not deployment.valid?, 'Validated deployment when another running deployment exists'
+        assert_not_empty deployment.errors[:foreman_task_uuid]
+      end
     end
 
     describe "rhev deployment" do
@@ -199,6 +224,54 @@ class DeploymentTest < ActiveSupport::TestCase
         rhev.rhev_share_path = '/gv0'
         assert_not rhev.save, "Saved rhev deployment who's glusterfs path ended in a slash"
       end
+
+      test "should not save rhev deployment if self hosted and storage is empty" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.hosted_storage_address = nil
+        assert_not rhev.save, "Saved self hosted rhev deployment who's hosted storage address is empty"
+      end
+
+      test "should not save rhev deployment if self hosted and path is empty" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.hosted_storage_path = nil
+        assert_not rhev.save, "Saved self hosted rhev deployment who's hosted storage path is empty"
+      end
+
+      test "should not save rhev deployment if self hosted and gluster path ends in a slash" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.rhev_storage_type = 'glusterfs'
+        rhev.hosted_storage_path = 'gv0/'
+        assert_not rhev.save, "Saved self hosted rhev deployment who's hosted gluster storage path ends in a slash"
+      end
+
+      test "should not save rhev deployment if self hosted and gluster path begins with a slash" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.rhev_storage_type = 'glusterfs'
+        rhev.hosted_storage_path = '/gv0'
+        assert_not rhev.save, "Saved self hosted rhev deployment who's hosted gluster storage path begins with a slash"
+      end
+
+      test "should not save rhev self hosted deployment if hosted nfs storage path ends in slash" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.rhev_storage_type = 'NFS'
+        rhev.hosted_storage_path = '/invalid/path/'
+        assert_not rhev.save, "Saved rhev self hosted deployment who's hosted nfs storage path ended in a slash"
+      end
+
+      test "should invalidate rhev self hosted deployment if hosted NFS path does not have a leading slash" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.rhev_storage_type = 'NFS'
+        rhev.hosted_storage_path = 'test/this/out'
+        assert rhev.invalid?
+        assert_equal 'NFS path specified does not start with a "/", which is invalid',
+                     rhev.errors[:hosted_storage_path].first
+      end
+
+      test "should not save rhev self hosted deployment if hosted storage path contains non-ascii characters" do
+        rhev = fusor_deployments(:rhev_self_hosted)
+        rhev.hosted_storage_path = '/å'
+        assert_not rhev.save, "Saved rhev self hosted deployment who's storage path contained non-ascii characters"
+      end
     end
 
     describe "cfme deployment" do
@@ -227,6 +300,32 @@ class DeploymentTest < ActiveSupport::TestCase
         cfme = fusor_deployments(:rhev_and_cfme)
         cfme.cfme_root_password = ''
         assert_not cfme.save, "Saved cfme deployment that did not specify root password"
+      end
+
+      test "cfme deployments should not save if export storage address is empty" do
+        cfme = fusor_deployments(:rhev_and_cfme)
+        cfme.rhev_export_domain_address = nil
+        assert_not cfme.save, "Saved cfme deployment with empty export storage address"
+      end
+
+      test "cfme deployments should not save if export storage path is empty" do
+        cfme = fusor_deployments(:rhev_and_cfme)
+        cfme.rhev_export_domain_path = nil
+        assert_not cfme.save, "Saved cfme deployment with empty export storage path"
+      end
+
+      test "cfme deployments should not save if export gluster storage path ends in a slash" do
+        cfme = fusor_deployments(:rhev_and_cfme)
+        cfme.rhev_storage_type = 'glusterfs'
+        cfme.rhev_export_domain_path = "gv0/"
+        assert_not cfme.save, "Saved cfme deployment with gluster storage path that ends in a slash"
+      end
+
+      test "cfme deployments should not save if export gluster storage path begins with a slash" do
+        cfme = fusor_deployments(:rhev_and_cfme)
+        cfme.rhev_storage_type = 'glusterfs'
+        cfme.rhev_export_domain_path = "/gv0"
+        assert_not cfme.save, "Saved cfme deployment with gluster storage path beginning in a slash"
       end
     end
   end

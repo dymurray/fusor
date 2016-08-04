@@ -29,7 +29,7 @@ Summary: Fusor Plugin
 Name: %{?scl_prefix}rubygem-%{gem_name}
 
 Version: 1.0.0
-Release: 0%{dist}
+Release: 0%{?dist}
 Group: Development/Ruby
 License: Distributable
 URL: https://github.com/fusor/fusor
@@ -55,6 +55,9 @@ Requires: ruby(abi) = 1.8
 BuildRequires: ruby(abi) = 1.8
 %endif
 %endif
+
+BuildRequires: %{?scl_prefix}rubygem-fusor_server
+Requires: %{?scl_prefix}rubygem-fusor_server
 
 # Hack so we may try to work with a stable katello 2.0 which requires foreman 1.6
 Requires: foreman >= 1.6.0
@@ -89,7 +92,6 @@ gem install --local --install-dir .%{gem_dir} --force %{SOURCE0}
 %build
 
 %install
-
 mkdir -p %{buildroot}%{gem_dir}
 cp -a .%{gem_dir}/* \
         %{buildroot}%{gem_dir}/
@@ -98,8 +100,7 @@ cp -a .%{gem_dir}/* \
 %foreman_precompile_plugin -s
 
 mkdir -p %{buildroot}%{foreman_dir}/public/assets
-ln -s %{foreman_assets_plugin} %{buildroot}%{foreman_dir}/public/assets/fusor_ui
-ln -s %{gem_instdir}/app/assets/images/r %{buildroot}%{foreman_dir}/public/assets/r
+
 %clean
 %{__rm} -rf %{buildroot}
 
@@ -109,8 +110,6 @@ ln -s %{gem_instdir}/app/assets/images/r %{buildroot}%{foreman_dir}/public/asset
 %exclude %{gem_cache}
 %{gem_spec}
 %{foreman_bundlerd_dir}/%{gem_name}.rb
-%{foreman_dir}/public/assets/fusor_ui
-%{foreman_dir}/public/assets/r
 %{foreman_assets_plugin}
 
 %files doc
@@ -129,7 +128,7 @@ ln -s %{gem_instdir}/app/assets/images/r %{buildroot}%{foreman_dir}/public/asset
   changed (jmagen@redhat.com)
 
 * Thu Apr 09 2015 John Matthews <jwmatthews@gmail.com> 0.0.1-20
-- 
+-
 
 * Mon Apr 06 2015 John Matthews <jwmatthews@gmail.com> 0.0.1-19
 - update FusorUI assets (jmagen@redhat.com)
@@ -213,10 +212,10 @@ ln -s %{gem_instdir}/app/assets/images/r %{buildroot}%{foreman_dir}/public/asset
   Foreman 1.6 (jwmatthews@gmail.com)
 
 * Mon Feb 02 2015 John Matthews <jwmatthews@gmail.com> 0.0.1-5
-- 
+-
 
 * Tue Jan 27 2015 John Matthews <jwmatthews@gmail.com> 0.0.1-4
-- 
+-
 
 * Tue Jan 27 2015 John Matthews <jwmatthews@gmail.com> 0.0.1-3
 - new package built with tito

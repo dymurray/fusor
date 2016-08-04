@@ -15,7 +15,7 @@ module Utils
   module CloudForms
     class AddCredentialsForHosts
       def self.add(cfme_ip, deployment)
-        Rails.logger.info "Starting - Adding Host credentials to the RHEV provider at #{cfme_ip}"
+        ::Fusor.log.info "Starting - Adding Host credentials to the RHV provider at #{cfme_ip}"
         begin
           ssh_username  = "root"
           ssh_password  = deployment.cfme_root_password
@@ -30,10 +30,10 @@ module Utils
           # create the hosts csv file
           csv_file = open("#{csv_file_path}/#{csv_file_name}", 'a')
           csv_file.sync = true
-          csv_file.puts "ip, hostname"
+          csv_file.puts "ip,hostname"
           hypervisor_hosts = deployment.rhev_hypervisor_hosts
           hypervisor_hosts.each do |hhost|
-            csv_file.puts "#{hhost.ip}, #{hhost.name}"
+            csv_file.puts "#{hhost.ip},#{hhost.name}"
           end
           csv_file.close
 
@@ -61,7 +61,7 @@ module Utils
           @io.close if @io && !@io.closed?
           fail _("Failed to add host credentials. Error message: #{e.message}")
         end
-        Rails.logger.info "Finished - Adding Host credentials to the RHEV provider at #{cfme_ip}"
+        ::Fusor.log.info "Finished - Adding Host credentials to the RHV provider at #{cfme_ip}"
       end
     end
   end
