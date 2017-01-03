@@ -4,6 +4,7 @@ import OpenshiftMixin from "../mixins/openshift-mixin";
 import {
   AllValidator,
   PresenceValidator,
+  EqualityValidator,
   NfsPathValidator,
   GlusterPathValidator,
   AlphaNumericDashUnderscoreValidator,
@@ -89,27 +90,69 @@ export default Ember.Controller.extend(OpenshiftMixin, {
     ]
   }),
 
-  nfsPathValidator: AllValidator.create({
-    validators: [
-      PresenceValidator.create({}),
-      NfsPathValidator.create({})
-    ]
-  }),
+  exportPathValidator: Ember.computed(
+    'deployment.openshift_storage_type',
+    'deployment.openshift_storage_host',
+    'deployment.rhev_storage_type',
+    'deployment.deploy_rhev',
+    'deployment.rhev_storage_address',
+    'deployment.rhev_share_path',
+    'deployment.deploy_cfme',
+    'deployment.rhev_export_domain_address',
+    'deployment.rhev_export_domain_path',
+    'deployment.rhev_is_self_hosted',
+    'deployment.hosted_storage_address',
+    'deployment.hosted_storage_path',
+    function () {
+      let openshiftStorageType = this.get('deployment.openshift_storage_type');
+      let openshiftStorageHost = this.get('deployment.openshift_storage_host');
+      let rhevStorageType = this.get('deployment.rhev_storage_type');
+      let deployRhev = this.get('deployment.deploy_rhev');
+      let rhevStorageAddress = this.get('deployment.rhev_storage_address');
+      let rhevSharePath = this.get('deployment.rhev_share_path');
+      let deployCfme = this.get('deployment.deploy_cfme');
+      let rhevExportDomainAddress = this.get('deployment.rhev_export_domain_address');
+      let rhevExportDomainPath = this.get('deployment.rhev_export_domain_path');
+      let rhevIsSelfHosted = this.get('deployment.rhev_is_self_hosted');
+      let hostedStorageAddress = this.get('deployment.hosted_storage_address');
+      let hostedStoragePath = this.get('deployment.hosted_storage_path');
 
-  glusterPathValidator: AllValidator.create({
-    validators: [
-      PresenceValidator.create({}),
-      GlusterPathValidator.create({})
-    ]
-  }),
+      let validators = [];
 
-  exportPathValidator: Ember.computed('deploymentController.model.openshift_storage_type', function() {
-    if (this.get('deploymentController.model.openshift_storage_type') === 'NFS') {
-      return this.get('nfsPathValidator');
-    }
+      validators.push(PresenceValidator.create({}));
 
-    return this.get('glusterPathValidator');
-  }),
+      if (openshiftStorageType === 'NFS') {
+        validators.push(NfsPathValidator.create({}));
+      } else {
+        validators.push(GlusterPathValidator.create({}));
+      }
+
+      if (openshiftStorageType === rhevStorageType && Ember.isPresent(openshiftStorageHost)) {
+        openshiftStorageHost = openshiftStorageHost.trim();
+
+        if (deployRhev && Ember.isPresent(rhevStorageAddress) && Ember.isPresent(rhevSharePath)) {
+          if (openshiftStorageHost === rhevStorageAddress.trim()) {
+            validators.push(EqualityValidator.create({doesNotEqual: rhevSharePath, message: 'This field must not equal RHV Share Path'}));
+          }
+        }
+
+        if (deployCfme && Ember.isPresent(rhevExportDomainAddress) && Ember.isPresent(rhevExportDomainPath)) {
+          if (openshiftStorageHost === rhevExportDomainAddress.trim()) {
+            validators.push(EqualityValidator.create({doesNotEqual: rhevExportDomainPath, message: 'This field must not equal RHV Export Domain Share Path'}));
+          }
+        }
+
+        if (rhevIsSelfHosted && Ember.isPresent(hostedStorageAddress) && Ember.isPresent(hostedStoragePath)) {
+          if (openshiftStorageHost === hostedStorageAddress) {
+            validators.push(EqualityValidator.create({doesNotEqual: hostedStoragePath, message: 'This field must not equal RHV Self-Hosted Share Path'}));
+          }
+        }
+      }
+
+      return AllValidator.create({
+        validators: validators
+      });
+    }),
 
   subdomainValidator: AllValidator.create({
     validators: [

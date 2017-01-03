@@ -47,6 +47,8 @@ module Fusor
     has_many :ose_master_hosts, :through => :ose_deployment_master_hosts, :class_name => "::Host::Base", :source => :discovered_host
     has_many :ose_deployment_worker_hosts, -> { where(:deployment_host_type => 'ose_worker') }, :class_name => "Fusor::DeploymentHost"
     has_many :ose_worker_hosts, :through => :ose_deployment_worker_hosts, :class_name => "::Host::Base", :source => :discovered_host
+    has_many :ose_deployment_ha_hosts, -> { where(:deployment_host_type => 'ose_ha') }, :class_name => "Fusor::DeploymentHost"
+    has_many :ose_ha_hosts, :through => :ose_deployment_ha_hosts, :class_name => "::Host::Base", :source => :discovered_host
     alias_attribute :discovered_host_id, :rhev_engine_host_id
     attr_accessor :foreman_task_id
 
@@ -56,7 +58,7 @@ module Fusor
     belongs_to :foreman_task, :class_name => "::ForemanTasks::Task", :foreign_key => :foreman_task_uuid
 
     after_initialize :setup_warnings
-    before_validation :update_label, :ensure_openstack_deployment, on: :create  # we validate on create, so we need to do it before those validations
+    before_validation :update_label, :ensure_openstack_deployment, :ensure_ssh_keys, on: :create  # we validate on create, so we need to do it before those validations
     before_save :update_label, :ensure_openstack_deployment, on: :update        # but we don't validate on update, so we need to call before_save
 
     scoped_search :on => [:id, :name, :updated_at], :complete_value => true
@@ -84,6 +86,14 @@ module Fusor
       foreman_task_uuid.present?
     end
 
+    def openshift_number_ha_nodes
+      self.openshift_number_master_nodes > 1 ? 2 : 0
+    end
+
+    def openshift_number_infra_nodes
+      self.openshift_number_master_nodes > 1 ? 2 : 0
+    end
+
     protected
 
     def update_label
@@ -97,6 +107,14 @@ module Fusor
         self.openstack_deployment.destroy if openstack_deployment
       end
       true
+    end
+
+    def ensure_ssh_keys
+      if self.ssh_private_key.nil? || self.ssh_private_key.empty?
+        keys = ::Utils::Fusor::SSHKeyUtils.new(self).generate_ssh_keys
+        self.ssh_private_key = keys[:private_key]
+        self.ssh_public_key = keys[:public_key]
+      end
     end
   end
 end

@@ -86,8 +86,8 @@ Requires: fusor_ovirt
 Requires: fusor-utils
 Requires: ansible-ovirt
 Requires: ansible-ocp
-
 Requires: ansible >= 1.9.0
+Requires: rhel-guest-image-7 >= 7.3
 
 %description
 Fusor Plugin
@@ -137,11 +137,6 @@ cp -a %{buildroot}/%{gem_instdir}/config/fusor.yaml %{buildroot}%{foreman_plugin
 
 %files doc
 %{gem_dir}/doc/%{gem_name}-%{version}
-
-%post
-if [ "$1" = "2" ]; then
- foreman-rake db:migrate
-fi
 
 %changelog
 * Wed Apr 15 2015 John Matthews <jwmatthews@gmail.com> 0.0.1-19
